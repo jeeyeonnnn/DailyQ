@@ -1,10 +1,27 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.region.endpoint import router as region_router
 
-app = FastAPI(title="DailyQ API", version="1.0.0")
+def set_cors(app):
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=['access-token', 'refresh-token']
+    )
 
-@app.get("/", tags=["☑️ Health Check"])
-def read_root():
-    return {"message": "Hello, DailyQ!"}
+def start_application():
+    app = FastAPI(title="DailyQ API", version="1.0.0")
 
-app.include_router(region_router)
+    @app.get('/', tags=['☑️ Healthy Check'])
+    def ecs_heathly_check():
+        return 'success'
+
+    set_cors(app)
+    app.include_router(region_router)
+    return app
+
+app = start_application()
