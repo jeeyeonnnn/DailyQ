@@ -23,3 +23,42 @@ class User(Base):
     pet_type = Column(Integer, nullable=False)
     level = Column(Integer, nullable=False, default=1)
     created_at = Column(DATETIME, nullable=False)
+
+
+class Subject(Base):
+    __tablename__ = "subject"
+    
+    id = Column(BigInteger, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+
+
+class Difficult(Base):
+    __tablename__ = "difficult"
+    
+    id = Column(BigInteger, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+
+
+class Question(Base):
+    __tablename__ = "question"
+
+    id = Column(BigInteger, primary_key=True, index=True)
+    subject_id = Column(BigInteger, ForeignKey("subject.id"), nullable=False)
+    difficult_id = Column(BigInteger, ForeignKey("difficult.id"), nullable=False)
+    name = Column(String, nullable=False)
+    select_1 = Column(String, nullable=False)
+    select_2 = Column(String, nullable=False)
+    select_3 = Column(String, nullable=False)
+    select_4 = Column(String, nullable=False)
+    answer = Column(String, nullable=False)
+    explanation = Column(String, nullable=False)
+
+
+class Exam(Base):
+    __tablename__ = "exam"
+
+    user_id = Column(BigInteger, ForeignKey("user.id"), nullable=False, primary_key=True)
+    question_id = Column(BigInteger, ForeignKey("question.id"), nullable=False, primary_key=True)
+    is_correct = Column(Integer, nullable=False)
+    choose= Column(Integer, nullable=False)
+    created_date = Column(DATETIME, nullable=False)

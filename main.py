@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.account.endpoint import router as account_router 
 from app.region.endpoint import router as region_router
+from app.user.endpoint import router as user_router
 
 def set_cors(app):
     app.add_middleware(
@@ -22,6 +24,8 @@ def start_application():
 
     set_cors(app)
     app.include_router(region_router)
+    app.include_router(account_router)
+    app.include_router(user_router)
     return app
 
 app = start_application()
