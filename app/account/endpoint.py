@@ -83,4 +83,6 @@ def onboarding(
     
     if status_code == -1:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "이미 존재하는 반려식입니다."})
+    elif status_code == -2:
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "이미 온보딩 완료되었습니다."})
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "온보딩이 완료되었습니다."})

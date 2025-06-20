@@ -33,8 +33,12 @@ class AccountRepository:
         with database.session_factory() as db:
             if db.query(User).filter(User.name == nickname).count() > 0:
                 return -1  # 이미 존재하는 닉네임
-            
+
             user: User = db.query(User).filter(User.id == user_id).one()
+
+            if user.name is not None:
+                return -2  # 이미 온보딩 완료
+            
             user.name = nickname
             user.pet_type = pet_type
             user.region_id = region_id
