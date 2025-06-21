@@ -29,7 +29,7 @@ def sign_up(request: SignUpRequest):
     elif status_code == 0:
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={
             "message": "회원가입이 완료되었습니다.",
-            "token": auth.encode_token(user_idx)
+            "access_token": auth.encode_token(user_idx)
         })
 
 
