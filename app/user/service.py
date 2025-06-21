@@ -106,7 +106,7 @@ class UserService:
         return solved_index, questions
 
     def random_choose_quiz(self, user_id: str, date: str, daily_quiz: list):
-        selected_questions, question_count = [], random.randint(10, 15)
+        selected_questions, question_count = [], 10
         subject_groups = defaultdict(list)
         difficult_groups = defaultdict(list)
 

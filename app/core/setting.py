@@ -26,6 +26,6 @@ class Setting:
         if count is None:
             return f'https://{self.S3_BUCKET_NAME}.s3.{self.S3_REGION}.amazonaws.com/no_exam.png'
         else:
-            return f'https://{self.S3_BUCKET_NAME}.s3.{self.S3_REGION}.amazonaws.com/exam/exam_result_{count}.png'
+            return f'https://{self.S3_BUCKET_NAME}.s3.{self.S3_REGION}.amazonaws.com/exam_result_{count}.png'
 
 setting = Setting()
