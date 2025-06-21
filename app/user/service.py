@@ -2,9 +2,13 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import random
 from collections import defaultdict
+from pytz import timezone
 
 from app.user.repository import repository
-from app.user.dto.service import MonthlyExam, ExamInfo, TodayExamInfo, DailyExamInfo, QuestionInfo, SubjectResult, DifficultResult
+from app.user.dto.service import (
+    MonthlyExam, ExamInfo, TodayExamInfo, DailyExamInfo, QuestionInfo, SubjectResult, DifficultResult, LevelUpInfo, 
+    SubjectAnalysis, DifficultAnalysis
+)
 from app.core.setting import setting
 
 class UserService:
@@ -210,5 +214,79 @@ class UserService:
         key = 1 if correct_rate >= 90 else 2 if correct_rate >= 70 else 3 if correct_rate >= 40 else 4
         return comment[key][idx]
 
-    
+    def get_user_my_page(self, user_id: int):
+        user_info, total_question_count, total_date = repository.get_user_info(user_id)
+        levelup_info = self.get_levelup_info(user_info.level, total_question_count)
+
+        pre_correct_rate, current_correct_rate = self.analyisis_correct_rate_mom(user_id)
+        subject_analysis = self.analyisis_subject_analysis(user_id)
+        difficult_analysis = self.analyisis_difficult_analysis(user_id)
+
+        return (
+            user_info.name,
+            user_info.level,
+            f'https://{setting.S3_BUCKET_NAME}.s3.{setting.S3_REGION}.amazonaws.com/{user_info.profile}',
+            user_info.created_at.date().strftime('%Y-%m-%d'),
+            levelup_info,
+            total_question_count,
+            total_date,
+            pre_correct_rate,
+            current_correct_rate,
+            subject_analysis,
+            difficult_analysis
+        )
+
+    def analyisis_subject_analysis(self, user_id: int):
+        subject_analysis = []
+        for subject_info in repository.get_subject_analysis(user_id):
+            total_rate = round(subject_info.total_correct / subject_info.total * 100, 0) if subject_info.total > 0 else 0
+            user_rate = round(subject_info.user_correct / subject_info.user * 100, 0) if subject_info.user > 0 else 0
+            subject_analysis.append(
+                SubjectAnalysis(
+                    subject=subject_info.name,
+                    total=total_rate,
+                    user=user_rate
+                )
+            )
+        return subject_analysis
+
+    def analyisis_difficult_analysis(self, user_id: int):
+        difficult_analysis = []
+        for difficult_info in repository.get_difficult_analysis(user_id):
+            total_rate = round(difficult_info.total_correct / difficult_info.total * 100, 0) if difficult_info.total > 0 else 0
+            user_rate = round(difficult_info.user_correct / difficult_info.user * 100, 0) if difficult_info.user > 0 else 0
+            difficult_analysis.append(
+                DifficultAnalysis(
+                    difficult=difficult_info.name,
+                    total=total_rate,
+                    user=user_rate
+                )
+            )
+        return difficult_analysis
+
+    def analyisis_correct_rate_mom(self, user_id: int):
+        today = datetime.now(timezone('Asia/Seoul'))
+        current_month_first = today.replace(day=1)
+        pre_month_last = current_month_first - timedelta(days=1)
+        pre_month_first = pre_month_last.replace(day=1)
+
+        pre_correct_rate = repository.get_correct_rate_by_date(user_id, pre_month_first, pre_month_last)
+        current_correct_rate = repository.get_correct_rate_by_date(user_id, current_month_first, today)
+        return pre_correct_rate, current_correct_rate
+
+    def get_levelup_info(self, level: int, question_count: int):
+        if level == 1:
+            total, left = 30, 30 - question_count
+        elif level == 2:
+            total, left = 100, 100 - question_count
+        elif level == 3:
+            total, left = 300, 300 - question_count
+        elif level == 4:
+            total, left = 500, 500 - question_count
+
+        return LevelUpInfo(
+            current=question_count,
+            left=left,
+            total=total
+        )
 service = UserService()

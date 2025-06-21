@@ -1,7 +1,9 @@
 from typing import List
 from pydantic import BaseModel, json_schema
 
-from app.user.dto.service import MonthlyExam, TodayExamInfo, QuestionInfo, SubjectResult, DifficultResult
+from app.user.dto.service import (
+    MonthlyExam, TodayExamInfo, QuestionInfo, SubjectResult, DifficultResult, LevelUpInfo, SubjectAnalysis, DifficultAnalysis
+)
 
 
 class MonthlyExamResponse(BaseModel):
@@ -202,3 +204,16 @@ class DailyQuizResultResponse(BaseModel):
                 ]
             }
         }
+
+class MyPageResponse(BaseModel):
+    nickname: str
+    level: int
+    profile: str
+    created_date: str
+    levelup_info: LevelUpInfo
+    total_question_count: int
+    total_date: int
+    pre_correct_rate: int
+    current_correct_rate: int
+    subject_analysis: List[SubjectAnalysis]
+    difficult_analysis: List[DifficultAnalysis]

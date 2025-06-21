@@ -63,3 +63,13 @@ class Exam(Base):
     choose= Column(Integer, nullable=False)
     order = Column(Integer, nullable=False)
     created_date = Column(DATETIME, nullable=False)
+
+
+class Profile(Base):
+    __tablename__ = "profile"
+
+    pet_type = Column(BigInteger, primary_key=True, index=True)
+    level = Column(BigInteger, primary_key=True, index=True)
+    mypage = Column(String, nullable=False)
+    ranking = Column(String, nullable=False)
+    chat = Column(String, nullable=False)

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.account.endpoint import router as account_router 
 from app.region.endpoint import router as region_router
 from app.user.endpoint import router as user_router
+from app.ranking.endpoint import router as ranking_router
 
 def set_cors(app):
     app.add_middleware(
@@ -26,6 +27,7 @@ def start_application():
     app.include_router(region_router)
     app.include_router(account_router)
     app.include_router(user_router)
+    app.include_router(ranking_router)
     return app
 
 app = start_application()

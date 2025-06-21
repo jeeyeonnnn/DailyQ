@@ -52,3 +52,20 @@ class DifficultResult(BaseModel):
     name: str
     total: int
     correct: int
+
+class LevelUpInfo(BaseModel):
+    current: int
+    left: int
+    total: int
+
+
+class SubjectAnalysis(BaseModel):
+    subject: str
+    user: int
+    total: int
+
+
+class DifficultAnalysis(BaseModel):
+    difficult: str
+    user: int
+    total: int

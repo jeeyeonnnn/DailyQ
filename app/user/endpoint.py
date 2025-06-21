@@ -5,7 +5,7 @@ from pytz import timezone
 
 from app.core.auth import auth
 from app.user.service import service
-from app.user.dto.response import MonthlyExamResponse, DailyQuizResponse, DailyQuizResultResponse
+from app.user.dto.response import MonthlyExamResponse, DailyQuizResponse, DailyQuizResultResponse, MyPageResponse
 from app.user.dto.request import DailyQuizRequest
 
 router = APIRouter(tags=['☑️ User : 유저 관련 API 모음'], prefix='/user')
@@ -72,4 +72,32 @@ def get_user_daily_quiz_result(
         comment=comment,
         difficult=difficult,
         subject=subject
+    )
+
+@router.get(
+    path='',
+    summary='유저 마이페이지 (분석)',
+    description='## ✔️️ [유저 마이페이지 (분석)] \n',
+    response_model=MyPageResponse
+)
+def get_user_my_page(
+    user_id=Depends(auth.auth_wrapper)
+):
+    (
+        nickname, level, profile, created_date, levelup_info, total_question_count, total_date, 
+        pre_correct_rate, current_correct_rate, subject_analysis, difficult_analysis
+    ) = service.get_user_my_page(user_id)
+
+    return MyPageResponse(
+        nickname=nickname,
+        level=level,
+        profile=profile,
+        created_date=created_date,
+        levelup_info=levelup_info,
+        total_question_count=total_question_count,
+        total_date=total_date,
+        pre_correct_rate=pre_correct_rate,
+        current_correct_rate=current_correct_rate,
+        subject_analysis=subject_analysis,
+        difficult_analysis=difficult_analysis
     )

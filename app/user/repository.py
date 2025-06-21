@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, distinct
 from sqlalchemy.sql import func, case
 
 from app.core.db import database
-from app.core.model import Exam, Question, Subject, Difficult, Region, User
+from app.core.model import Exam, Question, Subject, Difficult, Region, User, Profile
 
 class UserRepository:
     def get_monthly_exam_data(self, user_id: int, first_date: datetime, today: datetime):
@@ -191,5 +191,99 @@ class UserRepository:
             user = db.query(User).filter(User.id == user_id).one()
             user.level = level
             db.commit()
+
+    def get_user_info(self, user_id: int):
+        with database.session_factory() as db:
+            total_question_count = db.query(Exam).filter(Exam.user_id == user_id).count()
+            total_date = db.query(distinct(Exam.created_date)).filter(Exam.user_id == user_id).count()
+            return db.query(
+                User.name,
+                User.level,
+                Profile.mypage.label('profile'),
+                User.created_at
+            ).join(Profile, and_(
+                Profile.pet_type == User.pet_type,
+                Profile.level == User.level
+            )).filter(User.id == user_id).one(), total_question_count, total_date
+
+    def get_correct_rate_by_date(self, user_id: int, first_date: datetime, last_date: datetime):
+        with database.session_factory() as db:
+            total, correct = db.query(
+                func.count().label('total'),
+                func.sum(
+                    case(
+                        (Exam.is_correct == 1, 1),
+                        else_=0
+                    )
+                ).label('correct')
+            ).select_from(Exam)\
+            .filter(
+                Exam.created_date >= first_date,
+                Exam.created_date <= last_date,
+                Exam.user_id == user_id
+            ).one()
+
+            return round(correct / total * 100, 0) if total > 0 else 0
+
+
+    def get_subject_analysis(self, user_id: int):
+        with database.session_factory() as db:
+            return db.query(
+                Subject.name,
+                func.count().label('total'),
+                func.sum(
+                    case(
+                        (Exam.is_correct == 1, 1),
+                        else_=0
+                    )
+                ).label('total_correct'),
+                func.sum(
+                    case(
+                        (Exam.user_id == user_id, 1),
+                        else_=0
+                    )
+                ).label('user'),
+                func.sum(
+                    case(
+                        (and_(
+                            Exam.user_id == user_id,
+                            Exam.is_correct == 1
+                        ), 1),
+                        else_=0
+                    )
+                ).label('user_correct')
+            ).join(Question, Question.id == Exam.question_id)\
+                .join(Subject, Subject.id == Question.subject_id)\
+                .group_by(Subject.id).order_by(Subject.id).all()
+
+    def get_difficult_analysis(self, user_id: int):
+        with database.session_factory() as db:
+            return db.query(
+                Difficult.name,
+                func.count().label('total'),
+                func.sum(
+                    case(
+                        (Exam.is_correct == 1, 1),
+                        else_=0
+                    )
+                ).label('total_correct'),
+                func.sum(
+                    case(
+                        (Exam.user_id == user_id, 1),
+                        else_=0
+                    )
+                ).label('user'),
+                func.sum(
+                    case(
+                        (and_(
+                            Exam.user_id == user_id,
+                            Exam.is_correct == 1
+                        ), 1),
+                        else_=0
+                    )
+                ).label('user_correct')
+            ).join(Question, Question.id == Exam.question_id)\
+                .join(Difficult, Difficult.id == Question.difficult_id)\
+                .group_by(Difficult.id).order_by(Difficult.id).all()
 
 repository = UserRepository()
