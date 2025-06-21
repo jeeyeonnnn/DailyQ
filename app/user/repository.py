@@ -6,7 +6,7 @@ from app.core.db import database
 from app.core.model import Exam, Question, Subject, Difficult, Region, User
 
 class UserRepository:
-    def get_monthly_exam_data(self, user_id: str, first_date: datetime, today: datetime):
+    def get_monthly_exam_data(self, user_id: int, first_date: datetime, today: datetime):
         monthly_exam_data = []
         date_list = [
             (first_date + timedelta(days=i)).strftime("%Y-%m-%d")
@@ -24,7 +24,7 @@ class UserRepository:
                 )
         return monthly_exam_data
     
-    def get_daily_exam_data(self, user_id: str, today: str):
+    def get_daily_exam_data(self, user_id: int, today: str):
         with database.session_factory() as db:
             exam = db.query(
                 Subject.name.label('subject'),
@@ -47,7 +47,7 @@ class UserRepository:
             return exam.filter(Exam.is_correct == 1).all(), exam.filter(Exam.is_correct == 0).all()
 
 
-    def get_daily_quiz(self, date: str, user_id: str):
+    def get_daily_quiz(self, date: str, user_id: int):
         with database.session_factory() as db:
             # 오늘 퀴즈를 푼 이력이 있을 경우
             if db.query(Exam).filter(Exam.user_id == user_id, Exam.created_date == date).count() > 0:
@@ -90,13 +90,13 @@ class UserRepository:
             .all()
             return False, quiz_list
     
-    def update_exam(self, user_id: str, date: str, question_id_list: list):
+    def update_exam(self, user_id: int, date: str, question_id_list: list):
         with database.session_factory() as db:
             for index, question_id in enumerate(question_id_list):
                 db.add(Exam(user_id=user_id, question_id=question_id, created_date=date, order=index+1))
             db.commit()
 
-    def update_exam_choose(self, user_id: str, question_id: int, choose: int):
+    def update_exam_choose(self, user_id: int, question_id: int, choose: int):
         with database.session_factory() as db:
             question = db.query(Question).filter(Question.id == question_id).one()
             exam = db.query(Exam).filter(Exam.user_id == user_id, Exam.question_id == question_id).one()
@@ -104,13 +104,13 @@ class UserRepository:
             exam.is_correct = 1 if choose == question.answer else 0
             db.commit()
 
-    def get_region(self, user_id: str):
+    def get_region(self, user_id: int):
         with database.session_factory() as db:
             return db.query(Region)\
                 .join(User, User.region_id == Region.id)\
                     .filter(User.id == user_id).one().sub
 
-    def get_user_daily_quiz_result(self, user_id: str, date: str):
+    def get_user_daily_quiz_result(self, user_id: int, date: str):
         with database.session_factory() as db:
             exam = db.query(Exam).filter(Exam.user_id == user_id, Exam.created_date == date)
             correct, incorrect = exam.filter(Exam.is_correct == 1).count(), exam.filter(Exam.is_correct == 0).count()
@@ -152,7 +152,7 @@ class UserRepository:
 
             return correct_rate, difficult, subject
 
-    def get_current_date(self, user_id: str):
+    def get_current_date(self, user_id: int):
         with database.session_factory() as db:
             date_info = db.query(
                 Exam.created_date,
@@ -171,10 +171,25 @@ class UserRepository:
                 return date.created_date
         return date_info[-1].created_date
 
-    def is_exist_exam_today(self, user_id: str, today: str):
+    def is_exist_exam_today(self, user_id: int, today: str):
         with database.session_factory() as db:
             return True if db.query(Exam)\
                 .filter(Exam.user_id == user_id, Exam.created_date == today)\
                     .count() > 0 else False
     
+    def get_user_level_and_total_question_count(self, user_id: int):
+        with database.session_factory() as db:
+            return db.query(
+                User.level,
+                func.count().label('total_question_count')
+            ).select_from(Exam).join(User, User.id == Exam.user_id)\
+                .filter(User.id == user_id)\
+                .group_by(User.level).one()
+
+    def update_user_level(self, user_id: int, level: int):
+        with database.session_factory() as db:
+            user = db.query(User).filter(User.id == user_id).one()
+            user.level = level
+            db.commit()
+
 repository = UserRepository()

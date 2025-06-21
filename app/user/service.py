@@ -8,7 +8,7 @@ from app.user.dto.service import MonthlyExam, ExamInfo, TodayExamInfo, DailyExam
 from app.core.setting import setting
 
 class UserService:
-    def get_user_monthly_and_daily_problem_solving(self, user_id: str, today: str):
+    def get_user_monthly_and_daily_problem_solving(self, user_id: int, today: str):
         monthly_exam, region = [], repository.get_region(user_id)
         first_date = datetime.strptime(today, '%Y-%m-%d').replace(day=1)
         last_date = first_date + relativedelta(months=1) - timedelta(days=1)
@@ -79,7 +79,7 @@ class UserService:
             ) if is_exit_data else None
         )
 
-    def get_user_daily_quiz(self, date: str, user_id: str):
+    def get_user_daily_quiz(self, date: str, user_id: int):
         is_exit, daily_quiz = repository.get_daily_quiz(date, user_id)
         solved_index, questions = 100, []
 
@@ -106,7 +106,7 @@ class UserService:
 
         return solved_index, questions
 
-    def random_choose_quiz(self, user_id: str, date: str, daily_quiz: list):
+    def random_choose_quiz(self, user_id: int, date: str, daily_quiz: list):
         selected_questions, question_count = [], 10
         subject_groups = defaultdict(list)
         difficult_groups = defaultdict(list)
@@ -142,10 +142,10 @@ class UserService:
         return final_questions[:question_count]
 
     
-    def update_user_daily_quiz(self, user_id: str, question_id: int, choose: int):
+    def update_user_daily_quiz(self, user_id: int, question_id: int, choose: int):
         repository.update_exam_choose(user_id, question_id, choose)
 
-    def get_user_daily_quiz_result(self, user_id: str):
+    def get_user_daily_quiz_result(self, user_id: int):
         self.check_user_level_up(user_id)
         current_date = repository.get_current_date(user_id)
         correct_rate, difficult, subject = repository.get_user_daily_quiz_result(user_id, current_date)
@@ -170,8 +170,17 @@ class UserService:
             )
         return int(correct_rate), self.get_comment_by_correct_rate(correct_rate), difficult_result, subject_result
 
-    def check_user_level_up(self, user_id: str):
+    def check_user_level_up(self, user_id: int):
         level, total_question_count = repository.get_user_level_and_total_question_count(user_id)
+        
+        if level == 1 and total_question_count >= 30:
+            repository.update_user_level(user_id, 2)
+        elif level == 2 and total_question_count >= 100:
+            repository.update_user_level(user_id, 3)
+        elif level == 3 and total_question_count >= 300:
+            repository.update_user_level(user_id, 4)
+        elif level == 4 and total_question_count >= 500:
+            repository.update_user_level(user_id, 5)
     
     def get_comment_by_correct_rate(self, correct_rate: float):
         comment = {
