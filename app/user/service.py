@@ -32,7 +32,7 @@ class UserService:
                 )
             )
 
-        if monthly_exam_data[-1][1] is not None:
+        if repository.is_exist_exam_today(user_id, today):
             correct, incorrect = repository.get_daily_exam_data(user_id, today)
             correct_exam, incorrect_exam = [], []
 
@@ -196,5 +196,6 @@ class UserService:
         idx = random.randint(0, 2)
         key = 1 if correct_rate >= 90 else 2 if correct_rate >= 70 else 3 if correct_rate >= 40 else 4
         return comment[key][idx]
+
     
 service = UserService()

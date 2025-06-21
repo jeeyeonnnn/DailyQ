@@ -170,5 +170,11 @@ class UserRepository:
             if date.exam == date.total:
                 return date.created_date
         return date_info[-1].created_date
+
+    def is_exist_exam_today(self, user_id: str, today: str):
+        with database.session_factory() as db:
+            return True if db.query(Exam)\
+                .filter(Exam.user_id == user_id, Exam.created_date == today)\
+                    .count() > 0 else False
     
 repository = UserRepository()
