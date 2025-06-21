@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 from fastapi import status, Depends
 from fastapi.responses import JSONResponse
 
