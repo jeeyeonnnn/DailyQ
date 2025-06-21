@@ -79,13 +79,9 @@ def sign_in(request: SignInRequest):
                 '''
 )
 def onboarding(
-    request: Request,
+    request: OnboardingRequest,
     user_id=Depends(auth.auth_wrapper)
-):
-    print(request.body)
-    print(request.headers)
-
-    # request = OnboardingRequest(**request.json())
+):  
     status_code = service.onboarding(user_id, request)
     
     if status_code == -1:
