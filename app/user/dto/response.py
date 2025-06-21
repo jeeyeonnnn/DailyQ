@@ -1,16 +1,18 @@
 from typing import List
 from pydantic import BaseModel, json_schema
 
-from app.user.dto.service import MonthlyExam, TodayExamInfo
+from app.user.dto.service import MonthlyExam, TodayExamInfo, QuestionInfo
 
 
 class MonthlyExamResponse(BaseModel):
+    region: str
     monthly_exam: List[MonthlyExam]
     today_exam: TodayExamInfo
 
     class Config:
         json_schema_extra = {
             "example": {
+                "region": "남양주시",
                 "monthly_exam": [
                     {
                     "date": "2025-06-01",
@@ -90,5 +92,44 @@ class MonthlyExamResponse(BaseModel):
                     }
                 
                 }
+            }
+        }
+
+class DailyQuizResponse(BaseModel):
+    solved_index: int
+    questions: List[QuestionInfo]
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "solved_index": 0,
+                "questions": [
+                    {
+                        "subject": "수/과학",
+                        "difficult": "하",
+                        "question_id": 1,
+                        "question": "대기 중 가장 많은 기체는?",
+                        "select_1": "산소",
+                        "select_2": "수소",
+                        "select_3": "이산화탄소",
+                        "select_4": "질소",
+                        "answer": 4,
+                        "explanation": "대기의 약 78%는 질소이며 가장 많은 기체입니다.",
+                        "correct_rate": 69
+                    },
+                    {
+                        "subject": "시사",
+                        "difficult": "중",
+                        "question_id": 2,
+                        "question": "노벨 평화상을 수상한 최초의 여성은 누구인가요?",
+                        "select_1": "마리 퀴리",
+                        "select_2": "말랄라 유사프자이",
+                        "select_3": "앙겔라 메르켈",
+                        "select_4": "테레사 수녀",
+                        "answer": 4,
+                        "explanation": "테레사 수녀는 인도에서 봉사활동을 한 공로로 노벨 평화상을 받았습니다.",
+                        "correct_rate": 92
+                    }
+                ]
             }
         }

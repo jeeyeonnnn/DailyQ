@@ -11,12 +11,14 @@ class AccountRepository:
     def sign_up(self, user_id: str, password: str):
         with database.session_factory() as db:
             if db.query(User).filter(User.user_id == user_id).count() > 0:
-                return -1  # 이미 존재하는 아이디
+                return -1, None  # 이미 존재하는 아이디
             
             now = datetime.now(timezone('Asia/Seoul'))
             db.add(User(user_id=user_id, password=password, created_at=now))
             db.commit()
-            return 0  # 회원가입 성공
+
+            user_idx = db.query(User).filter(User.user_id == user_id).one().id
+            return 0, user_idx  # 회원가입 성공
 
     def sign_in(self, user_id: str, password: str):
         with database.session_factory() as db:

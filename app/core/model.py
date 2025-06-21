@@ -61,4 +61,5 @@ class Exam(Base):
     question_id = Column(BigInteger, ForeignKey("question.id"), nullable=False, primary_key=True)
     is_correct = Column(Integer, nullable=False)
     choose= Column(Integer, nullable=False)
+    order = Column(Integer, nullable=False)
     created_date = Column(DATETIME, nullable=False)

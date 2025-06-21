@@ -26,3 +26,17 @@ class DailyExamInfo(BaseModel):
 class TodayExamInfo(BaseModel):
     correct: Optional[DailyExamInfo] = None
     incorrect: Optional[DailyExamInfo] = None
+
+
+class QuestionInfo(BaseModel):
+    subject: str
+    difficult: str
+    question_id: int
+    question: str
+    select_1: str
+    select_2: str
+    select_3: str
+    select_4: str
+    answer: int
+    explanation: str
+    correct_rate: int

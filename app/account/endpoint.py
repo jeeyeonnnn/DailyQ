@@ -22,12 +22,15 @@ router = APIRouter(tags=['☑️ Account : 계정 관련 API 모음'], prefix='/
                 '''
 )
 def sign_up(request: SignUpRequest):
-    status_code = service.sign_up(request)
+    status_code, user_idx = service.sign_up(request)
     
     if status_code == -1:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "이미 존재하는 아이디입니다."})
     elif status_code == 0:
-        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "회원가입이 완료되었습니다."})
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={
+            "message": "회원가입이 완료되었습니다.",
+            "token": auth.encode_token(user_idx)
+        })
 
 
 @router.post(
