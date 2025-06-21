@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from sqlalchemy import and_
+from sqlalchemy import and_, func
+from sqlalchemy.sql import func, case
 
 from app.core.db import database
 from app.core.model import Exam, Question, Subject, Difficult, Region, User
@@ -109,24 +110,65 @@ class UserRepository:
                 .join(User, User.region_id == Region.id)\
                     .filter(User.id == user_id).one().sub
 
-    def get_user_daily_quiz_result(self, user_id: str):
+    def get_user_daily_quiz_result(self, user_id: str, date: str):
         with database.session_factory() as db:
-            exam = db.query(
-                Subject.id,
-                Subject.name,
-                Difficult.id,
+            exam = db.query(Exam).filter(Exam.user_id == user_id, Exam.created_date == date)
+            correct, incorrect = exam.filter(Exam.is_correct == 1).count(), exam.filter(Exam.is_correct == 0).count()
+            correct_rate = round(correct / (correct + incorrect) * 100, 2) if correct + incorrect > 0 else 0
+
+            # 난이도별 정답/오답 수
+            difficult = db.query(
                 Difficult.name,
-                Exam.is_correct
+                func.sum(
+                    case(
+                        (Exam.is_correct == 1, 1), 
+                        else_=0
+                    )
+                ).label('correct'),
+                func.sum(1).label('total')
+            ).join(Question, Question.id == Exam.question_id)\
+            .join(Difficult, Difficult.id == Question.difficult_id)\
+            .filter(
+                Exam.user_id == user_id,
+                Exam.created_date == date
+            ).group_by(Difficult.id).order_by(Difficult.id).all()
+
+            # 주제별 정답/오답 수
+            subject = db.query(
+                Subject.name,
+                func.sum(
+                    case(
+                        (Exam.is_correct == 1, 1), 
+                        else_=0
+                    )
+                ).label('correct'),
+                func.sum(1).label('total')
             ).join(Question, Question.id == Exam.question_id)\
             .join(Subject, Subject.id == Question.subject_id)\
-            .join(Difficult, Difficult.id == Question.difficult_id)\
-            .filter(Exam.user_id == user_id, Exam.created_date == '2025-06-20')
+            .filter(
+                Exam.user_id == user_id,
+                Exam.created_date == date
+            ).group_by(Subject.id).order_by(Subject.id).all()
 
-            correct, incorrect = exam.filter(Exam.is_correct == 1).count(), exam.filter(Exam.is_correct == 0).count()
+            return correct_rate, difficult, subject
 
-            correct_rate = round(correct / (correct + incorrect) * 100, 2)
-            
+    def get_current_date(self, user_id: str):
+        with database.session_factory() as db:
+            date_info = db.query(
+                Exam.created_date,
+                func.sum(
+                    case(
+                        (Exam.choose != None, 1), 
+                        else_=0
+                    )
+                ).label('exam'),
+                func.sum(1).label('total')
+            ).filter(Exam.user_id == user_id).group_by(Exam.created_date)\
+                .order_by(Exam.created_date.desc()).all()
 
-
-
+        for date in date_info:
+            if date.exam == date.total:
+                return date.created_date
+        return date_info[-1].created_date
+    
 repository = UserRepository()

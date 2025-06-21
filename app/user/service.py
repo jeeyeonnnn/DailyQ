@@ -3,7 +3,7 @@ import random
 from collections import defaultdict
 
 from app.user.repository import repository
-from app.user.dto.service import MonthlyExam, ExamInfo, TodayExamInfo, DailyExamInfo, QuestionInfo
+from app.user.dto.service import MonthlyExam, ExamInfo, TodayExamInfo, DailyExamInfo, QuestionInfo, SubjectResult, DifficultResult
 from app.core.setting import setting
 
 class UserService:
@@ -143,6 +143,56 @@ class UserService:
         repository.update_exam_choose(user_id, question_id, choose)
 
     def get_user_daily_quiz_result(self, user_id: str):
-        correct_rate, tag, difficult = repository.get_user_daily_quiz_result(user_id)
+        current_date = repository.get_current_date(user_id)
+        correct_rate, difficult, subject = repository.get_user_daily_quiz_result(user_id, current_date)
+        subject_result, difficult_result = [], []
 
+        for diff in difficult:
+            difficult_result.append(
+                DifficultResult(
+                    name=diff.name,
+                    total=diff.total,
+                    correct=diff.correct
+                )
+            )
+        
+        for sub in subject:
+            subject_result.append(
+                SubjectResult(
+                    name=sub.name,
+                    total=sub.total,
+                    correct=sub.correct
+                )
+            )
+        return int(correct_rate), self.get_comment_by_correct_rate(correct_rate), difficult_result, subject_result
+
+    
+    def get_comment_by_correct_rate(self, correct_rate: float):
+        comment = {
+            1: [
+                "완벽한 결과예요! 이 부분은 정말 자신 있어도 되겠어요 👏",
+                "매우 훌륭해요! 이 주제는 이미 충분히 잘 알고 있네요 💯",
+                "거의 실수가 없어요. 안정적인 실력이 느껴집니다!"
+            ],
+            2: [
+                "좋은 흐름이에요! 조금 더 정리하면 완벽해질 수 있어요 👍",
+                "잘 하고 있어요! 틀린 문제를 다시 한번 살펴보면 더 좋아질 거예요",
+                "이 정도면 충분히 잘 해냈어요. 한두 부분만 더 확실히 해두면 좋겠어요 😊"
+            ],
+            3: [
+                "가능성이 보여요! 이해한 부분과 헷갈렸던 부분을 구분해보면 더 나아질 거예요 🔍",
+                "절반 이상 해냈다는 건 좋은 출발이에요. 약했던 문제들을 하나씩 다시 생각해보면 돼요!",
+                "중간 정도의 결과지만, 개선할 여지가 충분히 보여요. 방향은 맞고 있어요!"
+            ],
+            4: [
+                "조금 더 연습이 필요해요. 개념을 다시 차근차근 정리해보면 좋아질 거예요 📘",
+                "이번에는 어렵게 느껴졌을 수 있어요. 중요한 포인트만 다시 확인해보는 걸 추천해요!",
+                "결과는 아쉽지만, 지금부터 시작해도 충분히 따라잡을 수 있어요. 포기하지 마세요 💪"
+            ]
+        }
+
+        idx = random.randint(0, 2)
+        key = 1 if correct_rate >= 90 else 2 if correct_rate >= 70 else 3 if correct_rate >= 40 else 4
+        return comment[key][idx]
+    
 service = UserService()

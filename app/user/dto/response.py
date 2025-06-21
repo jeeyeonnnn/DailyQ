@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel, json_schema
 
-from app.user.dto.service import MonthlyExam, TodayExamInfo, QuestionInfo
+from app.user.dto.service import MonthlyExam, TodayExamInfo, QuestionInfo, SubjectResult, DifficultResult
 
 
 class MonthlyExamResponse(BaseModel):
@@ -129,6 +129,75 @@ class DailyQuizResponse(BaseModel):
                         "answer": 4,
                         "explanation": "테레사 수녀는 인도에서 봉사활동을 한 공로로 노벨 평화상을 받았습니다.",
                         "correct_rate": 92
+                    }
+                ]
+            }
+        }
+
+    
+class DailyQuizResultResponse(BaseModel):
+    correct_rate: int
+    comment: str
+    difficult: List[DifficultResult]
+    subject: List[SubjectResult]
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "correct_rate": 76,
+                "comment": "좋은 흐름이에요! 조금 더 정리하면 완벽해질 수 있어요 👍",
+                "difficult": [
+                    {
+                    "name": "상",
+                    "total": 1,
+                    "correct": 1
+                    },
+                    {
+                    "name": "중상",
+                    "total": 4,
+                    "correct": 3
+                    },
+                    {
+                    "name": "중",
+                    "total": 4,
+                    "correct": 3
+                    },
+                    {
+                    "name": "중하",
+                    "total": 3,
+                    "correct": 3
+                    },
+                    {
+                    "name": "하",
+                    "total": 1,
+                    "correct": 0
+                    }
+                ],
+                "subject": [
+                    {
+                    "name": "상식",
+                    "total": 1,
+                    "correct": 0
+                    },
+                    {
+                    "name": "언어",
+                    "total": 2,
+                    "correct": 2
+                    },
+                    {
+                    "name": "예술",
+                    "total": 3,
+                    "correct": 2
+                    },
+                    {
+                    "name": "시사",
+                    "total": 3,
+                    "correct": 3
+                    },
+                    {
+                    "name": "수/과학",
+                    "total": 4,
+                    "correct": 3
                     }
                 ]
             }

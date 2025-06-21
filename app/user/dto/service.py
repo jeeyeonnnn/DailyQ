@@ -40,3 +40,15 @@ class QuestionInfo(BaseModel):
     answer: int
     explanation: str
     correct_rate: int
+
+
+class SubjectResult(BaseModel):
+    name: str
+    total: int
+    correct: int
+
+
+class DifficultResult(BaseModel):
+    name: str
+    total: int
+    correct: int

@@ -5,7 +5,7 @@ from pytz import timezone
 
 from app.core.auth import auth
 from app.user.service import service
-from app.user.dto.response import MonthlyExamResponse, DailyQuizResponse
+from app.user.dto.response import MonthlyExamResponse, DailyQuizResponse, DailyQuizResultResponse
 from app.user.dto.request import DailyQuizRequest
 
 router = APIRouter(tags=['☑️ User : 유저 관련 API 모음'], prefix='/user')
@@ -57,12 +57,19 @@ def post_user_daily_quiz(
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "정답 저장이 완료되었습니다."})
 
 
-# @router.get(
-#     path='/quiz/result',
-#     summary='유저 데일리 퀴즈 결과 조회',
-#     description='## ✔️️ [유저 데일리 퀴즈 결과 조회] \n'
-# )
-# def get_user_daily_quiz_result(
-#     user_id=Depends(auth.auth_wrapper)
-# ):
-#     tag, difficult, correct_rate = service.get_user_daily_quiz_result(user_id)
+@router.get(
+    path='/quiz/result',
+    summary='유저 데일리 퀴즈 결과 조회',
+    description='## ✔️️ [유저 데일리 퀴즈 결과 조회] \n',
+    response_model=DailyQuizResultResponse
+)
+def get_user_daily_quiz_result(
+    user_id=Depends(auth.auth_wrapper)
+):
+    correct_rate, comment, difficult, subject = service.get_user_daily_quiz_result(user_id)
+    return DailyQuizResultResponse(
+        correct_rate=correct_rate,
+        comment=comment,
+        difficult=difficult,
+        subject=subject
+    )
