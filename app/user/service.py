@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 import random
 from collections import defaultdict
 
@@ -10,7 +11,8 @@ class UserService:
     def get_user_monthly_and_daily_problem_solving(self, user_id: str, today: str):
         monthly_exam, region = [], repository.get_region(user_id)
         first_date = datetime.strptime(today, '%Y-%m-%d').replace(day=1)
-        monthly_exam_data = repository.get_monthly_exam_data(user_id, first_date, datetime.strptime(today, '%Y-%m-%d'))
+        last_date = first_date + relativedelta(months=1) - timedelta(days=1)
+        monthly_exam_data = repository.get_monthly_exam_data(user_id, first_date, last_date)
 
         for date, correct_count in monthly_exam_data:
             if correct_count is not None:
