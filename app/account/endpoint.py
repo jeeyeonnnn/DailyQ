@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi import status, Depends
 from fastapi.responses import JSONResponse
 
@@ -79,9 +79,13 @@ def sign_in(request: SignInRequest):
                 '''
 )
 def onboarding(
-    request: OnboardingRequest,
+    request: Request,
     user_id=Depends(auth.auth_wrapper)
 ):
+    print(request.body)
+    print(request.headers)
+
+    # request = OnboardingRequest(**request.json())
     status_code = service.onboarding(user_id, request)
     
     if status_code == -1:
