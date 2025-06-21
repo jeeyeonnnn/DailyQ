@@ -32,7 +32,8 @@ class UserService:
                 )
             )
 
-        if repository.is_exist_exam_today(user_id, today):
+        is_exit_data = repository.is_exist_exam_today(user_id, today)
+        if is_exit_data:
             correct, incorrect = repository.get_daily_exam_data(user_id, today)
             correct_exam, incorrect_exam = [], []
 
@@ -71,11 +72,11 @@ class UserService:
             correct=DailyExamInfo(
                 count=len(correct_exam),
                 questions=correct_exam
-            ) if monthly_exam_data[-1][1] is not None else None,
+            ) if is_exit_data else None,
             incorrect=DailyExamInfo(
                 count=len(incorrect_exam),
                 questions=incorrect_exam
-            ) if monthly_exam_data[-1][1] is not None else None
+            ) if is_exit_data else None
         )
 
     def get_user_daily_quiz(self, date: str, user_id: str):
@@ -145,6 +146,7 @@ class UserService:
         repository.update_exam_choose(user_id, question_id, choose)
 
     def get_user_daily_quiz_result(self, user_id: str):
+        self.check_user_level_up(user_id)
         current_date = repository.get_current_date(user_id)
         correct_rate, difficult, subject = repository.get_user_daily_quiz_result(user_id, current_date)
         subject_result, difficult_result = [], []
@@ -168,6 +170,8 @@ class UserService:
             )
         return int(correct_rate), self.get_comment_by_correct_rate(correct_rate), difficult_result, subject_result
 
+    def check_user_level_up(self, user_id: str):
+        level, total_question_count = repository.get_user_level_and_total_question_count(user_id)
     
     def get_comment_by_correct_rate(self, correct_rate: float):
         comment = {
