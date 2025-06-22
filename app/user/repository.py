@@ -286,4 +286,20 @@ class UserRepository:
                 .join(Difficult, Difficult.id == Question.difficult_id)\
                 .group_by(Difficult.id).order_by(Difficult.id).all()
 
+    def search_user(self, keyword: str, user_id: int):
+        with database.session_factory() as db:
+            return db.query(
+                User.id, 
+                User.name,
+                User.level,
+                Profile.ranking.label('profile')
+            ).join(Profile, and_(
+                Profile.pet_type == User.pet_type,
+                Profile.level == User.level
+            )).filter(
+                User.name.like(f'%{keyword}%'),
+                User.id != user_id,
+                User.name != None
+            ).order_by(User.name).all()
+
 repository = UserRepository()

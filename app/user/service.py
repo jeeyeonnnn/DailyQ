@@ -10,6 +10,7 @@ from app.user.dto.service import (
     MonthlyExam, ExamInfo, TodayExamInfo, DailyExamInfo, QuestionInfo, SubjectResult, DifficultResult, LevelUpInfo, 
     SubjectAnalysis, DifficultAnalysis, MonthlyAnalysis, TagInfo, AnalysisInfo
 )
+from app.user.dto.response import UserSearchResponse
 from app.core.setting import setting
 
 class UserService:
@@ -353,4 +354,15 @@ class UserService:
             left=left,
             total=total
         )
+
+    def search_user(self, keyword: str, user_id: int):
+        users = repository.search_user(keyword, user_id)
+
+        return [UserSearchResponse(
+            id=user.id,
+            name=user.name,
+            level=user.level,
+            profile=f'https://{setting.S3_BUCKET_NAME}.s3.{setting.S3_REGION}.amazonaws.com/{user.profile}'
+        ) for user in users]
+
 service = UserService()

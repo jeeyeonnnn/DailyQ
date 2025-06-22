@@ -2,10 +2,11 @@ from fastapi import APIRouter, Query, Depends, status
 from fastapi.responses import JSONResponse
 from datetime import datetime
 from pytz import timezone
+from typing import List
 
 from app.core.auth import auth
 from app.user.service import service
-from app.user.dto.response import MonthlyExamResponse, DailyQuizResponse, DailyQuizResultResponse, MyPageResponse
+from app.user.dto.response import MonthlyExamResponse, DailyQuizResponse, DailyQuizResultResponse, MyPageResponse, UserSearchResponse
 from app.user.dto.request import DailyQuizRequest
 
 router = APIRouter(tags=['☑️ User : 유저 관련 API 모음'], prefix='/user')
@@ -76,7 +77,7 @@ def get_user_daily_quiz_result(
 
 @router.get(
     path='',
-    summary='유저 마이페이지 (분석)',
+    summary='유저 마이페이지 (분석 / 마이페이지 탭)',
     description='## ✔️️ [유저 마이페이지 (분석)] \n',
     response_model=MyPageResponse
 )
@@ -100,3 +101,18 @@ def get_user_my_page(
         subject_analysis=subject_analysis,
         difficult_analysis=difficult_analysis
     )
+
+@router.get(
+    path='/search',
+    summary='유저 검색 (채팅 탭)',
+    description='## ✔️️ [유저 검색] \n'
+                '### - 검색 키워드가 없으면 전체 유저 조회 \n'
+                '### - 검색 키워드가 있으면 해당 키워드로 유저 검색 \n'
+                '### - 유저 닉네임 가나다순으로 정렬',
+    response_model=List[UserSearchResponse]
+)
+def get_user_search(
+    keyword: str = Query(default=''),
+    user_id=Depends(auth.auth_wrapper)
+):
+    return service.search_user(keyword, user_id)

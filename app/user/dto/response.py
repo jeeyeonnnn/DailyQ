@@ -311,3 +311,19 @@ class MyPageResponse(BaseModel):
                 }
             }
         }
+
+class UserSearchResponse(BaseModel):
+    id: int
+    name: str
+    level: int
+    profile: str
+
+    class Config:
+        json_schema_extra = {
+            "example":   {
+                "id": 3,
+                "name": "꽃붕이",
+                "level": 1,
+                "profile": "https://daily-quizz.s3.ap-northeast-2.amazonaws.com/ranking_1.png"
+            }
+        }
