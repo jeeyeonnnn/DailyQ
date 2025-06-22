@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from unicodedata import name
 from dateutil.relativedelta import relativedelta
 import random
 from collections import defaultdict
@@ -7,7 +8,7 @@ from pytz import timezone
 from app.user.repository import repository
 from app.user.dto.service import (
     MonthlyExam, ExamInfo, TodayExamInfo, DailyExamInfo, QuestionInfo, SubjectResult, DifficultResult, LevelUpInfo, 
-    SubjectAnalysis, DifficultAnalysis
+    SubjectAnalysis, DifficultAnalysis, MonthlyAnalysis, TagInfo, AnalysisInfo
 )
 from app.core.setting import setting
 
@@ -218,7 +219,7 @@ class UserService:
         user_info, total_question_count, total_date = repository.get_user_info(user_id)
         levelup_info = self.get_levelup_info(user_info.level, total_question_count)
 
-        pre_correct_rate, current_correct_rate = self.analyisis_correct_rate_mom(user_id)
+        monthly_analysis = self.analyisis_correct_rate_mom(user_id)
         subject_analysis = self.analyisis_subject_analysis(user_id)
         difficult_analysis = self.analyisis_difficult_analysis(user_id)
 
@@ -230,39 +231,86 @@ class UserService:
             levelup_info,
             total_question_count,
             total_date,
-            pre_correct_rate,
-            current_correct_rate,
+            monthly_analysis,
             subject_analysis,
             difficult_analysis
         )
 
     def analyisis_subject_analysis(self, user_id: int):
         subject_analysis = []
+        good_rate, good, bad_rate, bad = 0, '', 0, ''
         for subject_info in repository.get_subject_analysis(user_id):
             total_rate = round(subject_info.total_correct / subject_info.total * 100, 0) if subject_info.total > 0 else 0
             user_rate = round(subject_info.user_correct / subject_info.user * 100, 0) if subject_info.user > 0 else 0
+
+            rate = user_rate - total_rate
+            if rate > 0 and rate > good_rate:
+                good_rate = rate
+                good = subject_info.name
+            elif rate < 0 and rate < bad_rate:
+                bad_rate = rate
+                bad = subject_info.name
+
             subject_analysis.append(
-                SubjectAnalysis(
-                    subject=subject_info.name,
+                TagInfo(
+                    name=subject_info.name,
                     total=total_rate,
                     user=user_rate
                 )
             )
-        return subject_analysis
+
+        good = AnalysisInfo(
+            name=good,
+            rate=good_rate
+        ) if good_rate != 0 else None
+        bad = AnalysisInfo(
+            name=bad,
+            rate=bad_rate * -1
+        ) if bad_rate != 0 else None
+
+        return SubjectAnalysis(
+            tags=subject_analysis,
+            good=good,
+            bad=bad
+        )
 
     def analyisis_difficult_analysis(self, user_id: int):
         difficult_analysis = []
+        good_rate, good, bad_rate, bad = 0, '', 0, ''
         for difficult_info in repository.get_difficult_analysis(user_id):
             total_rate = round(difficult_info.total_correct / difficult_info.total * 100, 0) if difficult_info.total > 0 else 0
             user_rate = round(difficult_info.user_correct / difficult_info.user * 100, 0) if difficult_info.user > 0 else 0
+
+            rate = user_rate - total_rate
+            if rate > 0 and rate > good_rate:
+                good_rate = rate
+                good = difficult_info.name
+            elif rate < 0 and rate < bad_rate:
+                bad_rate = rate
+                bad = difficult_info.name
+
             difficult_analysis.append(
-                DifficultAnalysis(
-                    difficult=difficult_info.name,
+                TagInfo(
+                    name=difficult_info.name,
                     total=total_rate,
                     user=user_rate
                 )
             )
-        return difficult_analysis
+        
+        good = AnalysisInfo(
+            name=good,
+            rate=good_rate
+        ) if good_rate != 0 else None
+        bad = AnalysisInfo(
+            name=bad,
+            rate=bad_rate * -1
+        ) if bad_rate != 0 else None
+
+        return DifficultAnalysis(
+            tags=difficult_analysis,
+            good=good,
+            bad=bad
+        )
 
     def analyisis_correct_rate_mom(self, user_id: int):
         today = datetime.now(timezone('Asia/Seoul'))
@@ -272,7 +320,23 @@ class UserService:
 
         pre_correct_rate = repository.get_correct_rate_by_date(user_id, pre_month_first, pre_month_last)
         current_correct_rate = repository.get_correct_rate_by_date(user_id, current_month_first, today)
-        return pre_correct_rate, current_correct_rate
+
+        if current_correct_rate - pre_correct_rate > 0:
+            diff_rate = f'+{current_correct_rate - pre_correct_rate}'
+            comment = '확실히 달랐네요 👍'
+        elif current_correct_rate - pre_correct_rate < 0:
+            diff_rate = f'-{pre_correct_rate - current_correct_rate}'
+            comment = '조금 부족했네요 💦'
+        else:
+            diff_rate = '+0'
+            comment = '비슷한 결과예요 😊'
+
+        return MonthlyAnalysis(
+            rate=diff_rate,
+            comment=comment,
+            pre_correct_rate=pre_correct_rate,
+            current_correct_rate=current_correct_rate
+        )
 
     def get_levelup_info(self, level: int, question_count: int):
         if level == 1:

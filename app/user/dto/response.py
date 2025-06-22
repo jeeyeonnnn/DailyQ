@@ -2,7 +2,8 @@ from typing import List
 from pydantic import BaseModel, json_schema
 
 from app.user.dto.service import (
-    MonthlyExam, TodayExamInfo, QuestionInfo, SubjectResult, DifficultResult, LevelUpInfo, SubjectAnalysis, DifficultAnalysis
+    MonthlyExam, TodayExamInfo, QuestionInfo, SubjectResult, DifficultResult, LevelUpInfo, SubjectAnalysis, DifficultAnalysis,
+    MonthlyAnalysis
 )
 
 
@@ -213,7 +214,100 @@ class MyPageResponse(BaseModel):
     levelup_info: LevelUpInfo
     total_question_count: int
     total_date: int
-    pre_correct_rate: int
-    current_correct_rate: int
-    subject_analysis: List[SubjectAnalysis]
-    difficult_analysis: List[DifficultAnalysis]
+    monthly_analysis: MonthlyAnalysis
+    subject_analysis: SubjectAnalysis
+    difficult_analysis: DifficultAnalysis
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "nickname": "무지개쿵야",
+                "level": 1,
+                "profile": "https://daily-quizz.s3.ap-northeast-2.amazonaws.com/mypage_1.png",
+                "created_date": "2025-06-20",
+                "levelup_info": {
+                    "current": 20,
+                    "left": 10,
+                    "total": 30
+                },
+                "total_question_count": 20,
+                "total_date": 2,
+                "monthly_analysis": {
+                    "rate": "+65",
+                    "comment": "확실히 달랐네요 👍",
+                    "pre_correct_rate": 0,
+                    "current_correct_rate": 65
+                },
+                "subject_analysis": {
+                    "tags": [
+                    {
+                        "name": "상식",
+                        "user": 50,
+                        "total": 50
+                    },
+                    {
+                        "name": "언어",
+                        "user": 75,
+                        "total": 62
+                    },
+                    {
+                        "name": "예술",
+                        "user": 60,
+                        "total": 56
+                    },
+                    {
+                        "name": "시사",
+                        "user": 50,
+                        "total": 40
+                    },
+                    {
+                        "name": "수/과학",
+                        "user": 71,
+                        "total": 58
+                    }
+                    ],
+                    "good": {
+                    "name": "언어",
+                    "rate": 13
+                    },
+                    "bad": None
+                },
+                "difficult_analysis": {
+                    "tags": [
+                    {
+                        "name": "상",
+                        "user": 0,
+                        "total": 0
+                    },
+                    {
+                        "name": "중상",
+                        "user": 71,
+                        "total": 64
+                    },
+                    {
+                        "name": "중",
+                        "user": 50,
+                        "total": 43
+                    },
+                    {
+                        "name": "중하",
+                        "user": 100,
+                        "total": 86
+                    },
+                    {
+                        "name": "하",
+                        "user": 50,
+                        "total": 60
+                    }
+                    ],
+                    "good": {
+                    "name": "중하",
+                    "rate": 14
+                    },
+                    "bad": {
+                    "name": "하",
+                    "rate": 10
+                    }
+                }
+            }
+        }

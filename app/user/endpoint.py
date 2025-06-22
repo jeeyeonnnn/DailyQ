@@ -85,7 +85,7 @@ def get_user_my_page(
 ):
     (
         nickname, level, profile, created_date, levelup_info, total_question_count, total_date, 
-        pre_correct_rate, current_correct_rate, subject_analysis, difficult_analysis
+        monthly_analysis, subject_analysis, difficult_analysis
     ) = service.get_user_my_page(user_id)
 
     return MyPageResponse(
@@ -96,8 +96,7 @@ def get_user_my_page(
         levelup_info=levelup_info,
         total_question_count=total_question_count,
         total_date=total_date,
-        pre_correct_rate=pre_correct_rate,
-        current_correct_rate=current_correct_rate,
+        monthly_analysis=monthly_analysis,
         subject_analysis=subject_analysis,
         difficult_analysis=difficult_analysis
     )

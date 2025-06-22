@@ -59,13 +59,31 @@ class LevelUpInfo(BaseModel):
     total: int
 
 
-class SubjectAnalysis(BaseModel):
-    subject: str
+class TagInfo(BaseModel):
+    name: str
     user: int
     total: int
+
+
+class AnalysisInfo(BaseModel):
+    name: str
+    rate: int
+
+
+class SubjectAnalysis(BaseModel):
+    tags: List[TagInfo]
+    good: Optional[AnalysisInfo] = None
+    bad: Optional[AnalysisInfo] = None
 
 
 class DifficultAnalysis(BaseModel):
-    difficult: str
-    user: int
-    total: int
+    tags: List[TagInfo]
+    good: Optional[AnalysisInfo] = None
+    bad: Optional[AnalysisInfo] = None
+
+
+class MonthlyAnalysis(BaseModel):
+    rate: str
+    comment: str
+    pre_correct_rate: int
+    current_correct_rate: int
