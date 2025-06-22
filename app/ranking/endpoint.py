@@ -4,7 +4,8 @@ from app.core.auth import auth
 from app.ranking.dto.response import RankingResponse
 from app.ranking.service import service
 
-router = APIRouter(prefix='/ranking', tags=['ranking'])
+
+router = APIRouter(tags=['☑️ Ranking : 랭킹 관련 API 모음'], prefix='/ranking')
 
 @router.get(
     path='',

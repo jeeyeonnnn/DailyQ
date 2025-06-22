@@ -73,3 +73,22 @@ class Profile(Base):
     mypage = Column(String, nullable=False)
     ranking = Column(String, nullable=False)
     chat = Column(String, nullable=False)
+
+
+class ChatRoom(Base):
+    __tablename__ = "chat_room"
+
+    id = Column(BigInteger, primary_key=True, index=True)
+    user_1_id = Column(BigInteger, ForeignKey("user.id"), nullable=False)
+    user_2_id = Column(BigInteger, ForeignKey("user.id"), nullable=False)
+    created_at = Column(DATETIME, nullable=False)
+
+class Chat(Base):
+    __tablename__ = "chat"
+
+    id = Column(BigInteger, primary_key=True, index=True)
+    room_id = Column(BigInteger, ForeignKey("chat_room.id"), nullable=False)
+    sender_id = Column(BigInteger, ForeignKey("user.id"), nullable=False)
+    content = Column(String, nullable=False)
+    is_read = Column(Integer, nullable=False)
+    created_at = Column(DATETIME, nullable=False)
