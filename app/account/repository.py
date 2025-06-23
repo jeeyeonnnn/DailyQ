@@ -46,5 +46,19 @@ class AccountRepository:
             user.region_id = region_id
             db.commit()
             return 0  # 온보딩 성공
+    
+    def google_sign_in(self, google_user_key: str):
+        with database.session_factory() as db:
+            user_id = f'G{google_user_key}'
+            user = db.query(User).filter(User.user_id == user_id).first()
+
+            if user is None:
+                db.add(User(user_id=user_id, created_at=datetime.now(timezone('Asia/Seoul'))))
+                db.commit()
+                user = db.query(User).filter(User.user_id == user_id).one()
+                return user.id, False
+            
+            is_sign_in_done = True if user.name is not None else False
+            return user.id, is_sign_in_done
 
 repository = AccountRepository()

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi import status, Depends
 from fastapi.responses import JSONResponse
 
-from app.account.dto.request import SignUpRequest, SignInRequest, OnboardingRequest
+from app.account.dto.request import SignUpRequest, SignInRequest, OnboardingRequest, GoogleSignInRequest
 from app.account.dto.response import SignInResponse
 from app.account.service import service
 from app.core.auth import auth
@@ -63,6 +63,23 @@ def sign_in(request: SignInRequest):
             "access_token": access_token,
             "is_signup_done": is_signup_done
         })
+
+
+@router.post(
+    path='/google-sign-in',
+    summary='구글 로그인',
+    description='## ✔️️ [구글 로그인 + 회원가입] \n',
+    response_model=SignInResponse
+)
+def google_sign_in(request: GoogleSignInRequest):
+    user_id, is_signup_done = service.google_sign_in(request)
+    
+    access_token = auth.encode_token(user_id)
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={
+        "message": "로그인이 완료되었습니다.", 
+        "access_token": access_token,
+        "is_signup_done": is_signup_done
+    })
 
 @router.post(
     path='/onboarding',

@@ -37,3 +37,14 @@ class OnboardingRequest(BaseModel):
                 "region_id": 31
             }
         }
+
+    
+class GoogleSignInRequest(BaseModel):
+    google_user_key: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "google_user_key": "fjeiog35901wsd"
+            }
+        }

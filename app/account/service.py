@@ -1,6 +1,6 @@
 import bcrypt
 
-from app.account.dto.request import SignUpRequest, SignInRequest, OnboardingRequest
+from app.account.dto.request import SignUpRequest, SignInRequest, OnboardingRequest, GoogleSignInRequest
 from app.account.repository import repository
 
 class AccountService:
@@ -14,5 +14,9 @@ class AccountService:
 
     def onboarding(self, user_id: str, request: OnboardingRequest):
         return repository.onboarding(user_id, request.nickname, request.pet_type, request.region_id)
+
+
+    def google_sign_in(self, request: GoogleSignInRequest):
+        return repository.google_sign_in(request.google_user_key)
 
 service = AccountService()
