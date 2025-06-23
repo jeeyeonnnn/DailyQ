@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import func, case, alias, and_, literal
 
@@ -8,6 +8,7 @@ from app.core.model import Region, User, Exam, Profile
 
 class RankingRepository:
     def get_ranking(self, user_id: int, monday: datetime, today: datetime):
+        today = today + timedelta(days=1)
         with database.session_factory() as db:
             region, region_id = db.query(
                 Region.sub,
@@ -15,17 +16,8 @@ class RankingRepository:
             ).join(User, User.region_id == Region.id)\
                 .filter(User.id == user_id).one()
 
-            correct_expr = (
-                func.round(
-                    func.sum(
-                        case((Exam.is_correct == 1, 1), else_=0)
-                    ) / func.nullif(func.count(), 0) * 100,
-                    2
-                )
-            )
-
             # 전체 랭킹 쿼리 (서브쿼리화)
-            ranking_subquery = db.query(
+            ranking = db.query(
                 func.row_number().over(order_by=correct_expr.desc()).label('ranking'),
                 User.id.label('user_id'),
                 User.name,
@@ -42,7 +34,7 @@ class RankingRepository:
             .filter(
                 User.region_id == region_id,
                 Exam.created_date >= monday,
-                Exam.created_date <= today
+                Exam.created_date < today
             ).group_by(User.id, User.name, User.level, User.pet_type, Profile.ranking)\
             .subquery()
 
