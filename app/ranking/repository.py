@@ -16,8 +16,18 @@ class RankingRepository:
             ).join(User, User.region_id == Region.id)\
                 .filter(User.id == user_id).one()
 
+            correct_expr = (
+                func.round(
+                    func.sum(
+                        case((Exam.is_correct == 1, 1), else_=0)
+                    ) / func.nullif(func.count(), 0) * 100,
+                    2
+                )
+            )
+
+
             # 전체 랭킹 쿼리 (서브쿼리화)
-            ranking = db.query(
+            ranking_subquery = db.query(
                 func.row_number().over(order_by=correct_expr.desc()).label('ranking'),
                 User.id.label('user_id'),
                 User.name,
