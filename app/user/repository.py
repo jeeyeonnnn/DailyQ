@@ -302,4 +302,39 @@ class UserRepository:
                 User.name != None
             ).order_by(User.name).all()
 
+    def get_daily_quiz_pdf(self, date: str, user_id: int):
+        with database.session_factory() as db:
+            # 오늘 퀴즈를 푼 이력이 있을 경우
+            if db.query(Exam).filter(Exam.user_id == user_id, Exam.created_date == date).count() > 0:
+                quiz_list = db.query(
+                    Subject.name.label('subject'),
+                    Difficult.name.label('difficult'),
+                    Exam.choose,
+                    Question.id,
+                    Question.name,
+                    Question.select_1,
+                    Question.select_2,
+                    Question.select_3,
+                    Question.select_4,
+                    Question.answer,
+                    Question.explanation
+                ).join(Question, Question.id == Exam.question_id)\
+                .join(Subject, Subject.id == Question.subject_id)\
+                .join(Difficult, Difficult.id == Question.difficult_id)\
+                .filter(Exam.user_id == user_id, Exam.created_date == date)\
+                .order_by(Exam.order).all()
+                return True, quiz_list
+        return False, []
+
+    def get_answer_by_question_id(self, question_id: int, answer: int):
+        with database.session_factory() as db:
+            select = db.query(
+                Question.select_1,
+                Question.select_2,
+                Question.select_3,
+                Question.select_4
+            ).filter(Question.id == question_id).one()
+            
+            return select[answer-1]
+
 repository = UserRepository()

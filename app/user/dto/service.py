@@ -87,3 +87,18 @@ class MonthlyAnalysis(BaseModel):
     comment: str
     pre_correct_rate: int
     current_correct_rate: int
+
+
+class QuestionPdfInfo(BaseModel):
+    subject: str
+    difficult: str
+    question: str
+    select_1: str
+    select_2: str
+    select_3: str
+    select_4: str
+
+
+class ExplanationPdfInfo(BaseModel):
+    answer: str
+    explanation: str

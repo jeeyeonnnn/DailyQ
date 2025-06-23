@@ -3,7 +3,7 @@ from pydantic import BaseModel, json_schema
 
 from app.user.dto.service import (
     MonthlyExam, TodayExamInfo, QuestionInfo, SubjectResult, DifficultResult, LevelUpInfo, SubjectAnalysis, DifficultAnalysis,
-    MonthlyAnalysis
+    MonthlyAnalysis, QuestionPdfInfo, ExplanationPdfInfo
 )
 
 
@@ -325,5 +325,45 @@ class UserSearchResponse(BaseModel):
                 "name": "꽃붕이",
                 "level": 1,
                 "profile": "https://daily-quizz.s3.ap-northeast-2.amazonaws.com/ranking_1.png"
+            }
+        }
+
+class DailyQuizPdfResponse(BaseModel):
+    questions: List[QuestionPdfInfo]
+    explanations: List[ExplanationPdfInfo]
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "questions": [
+                    {
+                    "subject": "예술",
+                    "difficult": "상",
+                    "question": "다음 중 입체파 화가는?",
+                    "select_1": "피카소",
+                    "select_2": "고흐",
+                    "select_3": "르누아르",
+                    "select_4": "모딜리아니"
+                    },
+                    {
+                    "subject": "수/과학",
+                    "difficult": "중상",
+                    "question": "원소 기호 ‘O’는 무엇인가요?",
+                    "select_1": "산소",
+                    "select_2": "수소",
+                    "select_3": "질소",
+                    "select_4": "탄소"
+                    }
+                ],
+                "explanations": [
+                    {
+                        "answer": "피카소",
+                        "explanation": "피카소는 입체파(Cubism)의 대표적 창시자입니다."
+                    },
+                    {
+                        "answer": "산소",
+                        "explanation": "‘O’는 산소를 뜻하는 원소 기호입니다."
+                    }
+                ]
             }
         }

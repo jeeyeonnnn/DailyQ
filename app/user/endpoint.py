@@ -6,7 +6,9 @@ from typing import List
 
 from app.core.auth import auth
 from app.user.service import service
-from app.user.dto.response import MonthlyExamResponse, DailyQuizResponse, DailyQuizResultResponse, MyPageResponse, UserSearchResponse
+from app.user.dto.response import (
+    MonthlyExamResponse, DailyQuizResponse, DailyQuizResultResponse, MyPageResponse, UserSearchResponse, DailyQuizPdfResponse
+)
 from app.user.dto.request import DailyQuizRequest
 
 router = APIRouter(tags=['☑️ User : 유저 관련 API 모음'], prefix='/user')
@@ -44,6 +46,25 @@ def get_user_daily_quiz(
         questions=questions
     )
 
+@router.get(
+    path='/quiz/pdf',
+    summary='유저 데일리 퀴즈 문제 PDF 조회',
+    description='## ✔️️ [유저 데일리 퀴즈 문제 PDF 만들기] \n',
+    response_model=DailyQuizPdfResponse
+)
+def get_user_daily_quiz_pdf(
+    date: str = Query(default=datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d')),
+    user_id=Depends(auth.auth_wrapper)
+):
+    is_exit, questions, explanations = service.get_user_daily_quiz_pdf(date, user_id)
+
+    if not is_exit:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "오늘 퀴즈를 푼 이력이 없습니다."})
+    
+    return DailyQuizPdfResponse(
+        questions=questions,
+        explanations=explanations
+    )
 
 @router.post(
     path='/quiz',

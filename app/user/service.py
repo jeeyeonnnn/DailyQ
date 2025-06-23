@@ -8,7 +8,7 @@ from pytz import timezone
 from app.user.repository import repository
 from app.user.dto.service import (
     MonthlyExam, ExamInfo, TodayExamInfo, DailyExamInfo, QuestionInfo, SubjectResult, DifficultResult, LevelUpInfo, 
-    SubjectAnalysis, DifficultAnalysis, MonthlyAnalysis, TagInfo, AnalysisInfo
+    SubjectAnalysis, DifficultAnalysis, MonthlyAnalysis, TagInfo, AnalysisInfo, QuestionPdfInfo, ExplanationPdfInfo
 )
 from app.user.dto.response import UserSearchResponse
 from app.core.setting import setting
@@ -364,5 +364,32 @@ class UserService:
             level=user.level,
             profile=f'https://{setting.S3_BUCKET_NAME}.s3.{setting.S3_REGION}.amazonaws.com/{user.profile}'
         ) for user in users]
+
+    def get_user_daily_quiz_pdf(self, date: str, user_id: int):
+        is_exit, quiz_list = repository.get_daily_quiz_pdf(date, user_id)
+
+        if not is_exit:
+            return False, [], []
+        questions, explanations = [], []
+
+        for index, question in enumerate(quiz_list):
+            questions.append(
+                QuestionPdfInfo(
+                    subject=question.subject,
+                    difficult=question.difficult,
+                    question=question.name,
+                    select_1=question.select_1,
+                    select_2=question.select_2,
+                    select_3=question.select_3,
+                    select_4=question.select_4
+                )
+            )
+            explanations.append(
+                ExplanationPdfInfo(
+                    answer=repository.get_answer_by_question_id(question.id, question.answer),
+                    explanation=question.explanation
+                )
+            )
+        return True, questions, explanations
 
 service = UserService()
