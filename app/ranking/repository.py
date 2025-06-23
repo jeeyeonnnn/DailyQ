@@ -25,7 +25,6 @@ class RankingRepository:
                 )
             )
 
-
             # 전체 랭킹 쿼리 (서브쿼리화)
             ranking_subquery = db.query(
                 func.row_number().over(order_by=correct_expr.desc()).label('ranking'),
@@ -44,19 +43,16 @@ class RankingRepository:
             ))\
             .filter(
                 User.region_id == region_id,
-                Exam.created_date >= monday,
-                Exam.created_date < today
+                Exam.created_date >= monday.strftime('%Y-%m-%d'),
+                Exam.created_date < today.strftime('%Y-%m-%d')
             ).group_by(User.id, User.name, User.level, User.pet_type, Profile.ranking)\
             .subquery()
             
-            print(str(ranking_subquery))
-            print(monday.strftime('%Y-%m-%d'))
-            print(today.strftime('%Y-%m-%d'))
 
             Ranking = alias(ranking_subquery)
-
             # 전체 랭킹 top 10
             top_10 = db.query(Ranking).order_by(Ranking.c.ranking, Ranking.c.question_count.desc()).limit(10).all()
+
             # 현재 유저의 랭킹
             user_ranking = db.query(Ranking).filter(Ranking.c.user_id == user_id).first()
 
