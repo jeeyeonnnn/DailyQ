@@ -36,7 +36,8 @@ class RankingRepository:
                 Profile.ranking.label('profile'),
                 correct_expr.label('correct_rate'),
                 func.count().label('question_count')
-            ).join(User, User.id == Exam.user_id)\
+            ).select_from(Exam)\
+            .join(User, User.id == Exam.user_id)\
             .join(Profile, and_(
                 Profile.pet_type == User.pet_type,
                 Profile.level == User.level
@@ -47,7 +48,8 @@ class RankingRepository:
                 Exam.created_date < today
             ).group_by(User.id, User.name, User.level, User.pet_type, Profile.ranking)\
             .subquery()
-
+            
+            print(str(ranking_subquery))
             print(monday.strftime('%Y-%m-%d'))
             print(today.strftime('%Y-%m-%d'))
 
