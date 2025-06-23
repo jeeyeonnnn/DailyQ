@@ -46,6 +46,9 @@ class RankingRepository:
             ).group_by(User.id, User.name, User.level, User.pet_type, Profile.ranking)\
             .subquery()
 
+            print(monday.strftime('%Y-%m-%d')
+            print(today.strftime('%Y-%m-%d')
+
             Ranking = alias(ranking_subquery)
 
             # 전체 랭킹 top 10
