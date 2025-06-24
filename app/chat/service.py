@@ -4,6 +4,7 @@ from pytz import timezone
 from app.chat.repository import repository
 from app.chat.dto.response import ChatRoomResponse
 from app.chat.dto.service import ChatDetail, UserInfo
+from app.core.setting import setting
 
 class ChatService:
     def get_chat_list(self, user_id: int):
@@ -74,7 +75,7 @@ class ChatService:
         return chat_detail, UserInfo(
             nickname=other_info.name,
             level=other_info.level,
-            profile=other_info.profile
+            profile=f'https://{setting.S3_BUCKET_NAME}.s3.{setting.S3_REGION}.amazonaws.com/{other_info.profile}'
         )
        
     def get_chat_detail_time_diff(self, now, last_message_time) -> str:
