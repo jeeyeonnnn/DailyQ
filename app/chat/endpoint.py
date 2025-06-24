@@ -82,7 +82,7 @@ async def websocket_endpoint(
     print('웹소켓 관련 API 호출 ***')
     print(token)
     if token is not None:
-        user_idx = auth.decode_token(token[7:])
+        user_idx = auth.decode_token(token)
         print(f'WebSocket 연결 시도 : {user_idx}')
         await manager.connect(user_idx, websocket)
         print(f'WebSocket 연결 성공 : {user_idx}')
