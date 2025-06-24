@@ -66,6 +66,7 @@ class ChatService:
         for chat in chats:
             chat_detail.append(
                 ChatDetail(
+                    user_id=chat.sender_id,
                     content=chat.content,
                     is_user_send=True if chat.sender_id == user_id else False,
                     created_at=self.get_chat_detail_time_diff(now, chat.created_at)
