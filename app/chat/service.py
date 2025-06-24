@@ -22,7 +22,7 @@ class ChatService:
                     user_id=other_info.id,
                     nickname=other_info.name,
                     level=other_info.level,
-                    profile=other_info.profile,
+                    profile=f'https://{setting.S3_BUCKET_NAME}.s3.{setting.S3_REGION}.amazonaws.com/{other_info.profile}',
                     last_message=last_message,
                     last_message_time=self.get_time_diff(now, chat_room.last_message_time),
                     unread_count=unread_count
