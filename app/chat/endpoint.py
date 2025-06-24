@@ -66,9 +66,10 @@ def send_chat(
         manager.send_to_user,
         request.user_id,
         {
-            "from": user_idx,
+            "user_id": user_idx,
             "content": request.content,
-            "time": "방금 전"
+            "is_user_send": False,
+            "created_at": "방금 전"
         }
     )
     return JSONResponse(status_code=201, content={"message": "Message sent successfully"})
