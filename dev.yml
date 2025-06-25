@@ -4,7 +4,7 @@ services:
   fastapi:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: DockerfilePro
     command: uvicorn main:app --reload --host=0.0.0.0 
     ports:
       - 80:80
