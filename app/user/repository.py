@@ -3,7 +3,7 @@ from sqlalchemy import and_, func, distinct
 from sqlalchemy.sql import func, case
 
 from app.core.db import database
-from app.core.model import Exam, Question, Subject, Difficult, Region, User, Profile
+from app.core.model import Exam, Question, Subject, Difficult, Region, User, Profile, Report
 
 class UserRepository:
     def get_monthly_exam_data(self, user_id: int, first_date: datetime, today: datetime):
@@ -336,5 +336,57 @@ class UserRepository:
             ).filter(Question.id == question_id).one()
             
             return select[answer-1]
-
+        
+    def get_today_exams(self, date: str, user_id: int):
+        with database.session_factory() as db:
+            exams = db.query(
+                Question.name,
+                Question.answer,
+                Exam.is_correct
+            ).select_from(Exam).join(Question, Question.id == Exam.question_id)\
+                .filter(
+                    Exam.created_date == date,
+                    Exam.user_id == user_id
+                ).all()
+            return exams
+        
+    def save_report(self, date: str, user_id: int, title_list: list, content_list: list):
+        with database.session_factory() as db:
+            order = 1
+            
+            for title in title_list:
+                db.add(
+                    Report(
+                        date=date,
+                        user_id=user_id,
+                        is_title=1,
+                        content=title,
+                        order=order
+                    )
+                )
+                order += 1
+            
+            for content in content_list:
+                db.add(
+                    Report(
+                        date=date,
+                        user_id=user_id,
+                        is_title=0,
+                        content=content,
+                        order=order
+                    )
+                )
+                order += 1
+            db.commit()
+            
+    def get_today_report(self, date: str, user_id: int):
+        with database.session_factory() as db:
+            return db.query(
+                Report.is_title,
+                Report.content
+            ).filter(
+                Report.date == date,
+                Report.user_id == user_id
+            ).order_by(Report.order).all()
+            
 repository = UserRepository()

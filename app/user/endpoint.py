@@ -7,7 +7,8 @@ from typing import List
 from app.core.auth import auth
 from app.user.service import service
 from app.user.dto.response import (
-    MonthlyExamResponse, DailyQuizResponse, DailyQuizResultResponse, MyPageResponse, UserSearchResponse, DailyQuizPdfResponse
+    MonthlyExamResponse, DailyQuizResponse, DailyQuizResultResponse, MyPageResponse, UserSearchResponse, DailyQuizPdfResponse,
+    UserTodayReportResponse
 )
 from app.user.dto.request import DailyQuizRequest
 
@@ -137,3 +138,26 @@ def get_user_search(
     user_id=Depends(auth.auth_wrapper)
 ):
     return service.search_user(keyword, user_id)
+
+
+@router.get(
+    path='/today-report',
+    summary='유저 오늘의 학습 리포트 조회 (AI)',
+    description='## ✔️️ [유저 오늘의 학습 리포트 조회] \n'
+                '### - 오늘 문제 풀이 결과가 없으면 404 반환 => {"message": "오늘 문제 풀이 결과가 없습니다."} \n'
+                '### - 오늘 문제 풀이 결과가 있으면 리포트 반환',
+    response_model=UserTodayReportResponse
+)
+def get_user_today_report(
+    date: str = Query(default=datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d')),
+    user_id=Depends(auth.auth_wrapper)
+):
+    report_status, title, content = service.get_user_today_report(date, user_id)
+    
+    if not report_status:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "오늘 문제 풀이 결과가 없습니다."})
+    
+    return UserTodayReportResponse(
+        title=title,
+        content=content
+    )

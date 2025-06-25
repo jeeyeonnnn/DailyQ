@@ -1,9 +1,14 @@
+import json
+import openai
+from openai import OpenAI
+
 from datetime import datetime, timedelta
 from unicodedata import name
 from dateutil.relativedelta import relativedelta
 import random
 from collections import defaultdict
 from pytz import timezone
+
 
 from app.user.repository import repository
 from app.user.dto.service import (
@@ -12,6 +17,8 @@ from app.user.dto.service import (
 )
 from app.user.dto.response import UserSearchResponse
 from app.core.setting import setting
+
+client = OpenAI(api_key=setting.GPT_APP_KEY)
 
 class UserService:
     def get_user_monthly_and_daily_problem_solving(self, user_id: int, today: str):
@@ -392,4 +399,88 @@ class UserService:
             )
         return True, questions, explanations
 
+    def get_user_today_report(self, date: str, user_id: int):
+        today_exams = repository.get_today_exams(date, user_id)
+        
+        if len(today_exams) == 0:  # 오늘 문제 풀이 결과가 없는 경우
+            return False, [], []
+        
+        today_report = repository.get_today_report(date, user_id)
+        
+        if len(today_report) == 0:  # 저장된 데이터가 없는 경우 = AI API 호출
+            return self.ai_report_process(today_exams, date, user_id)
+        
+        title = [report.content for report in today_report if report.is_title == 1]
+        content = [report.content for report in today_report if report.is_title == 0]
+        
+        return True, title, content
+        
+    def ai_report_process(self, today_exams: list, date: str, user_id: int):
+        data = {'correct': [], 'incorrect': []}
+        for exam in today_exams:
+            if exam.is_correct:
+                data['correct'].append({
+                    'question': exam.name,
+                    'answer': exam.answer
+                })
+            else:
+                data['incorrect'].append({
+                    'question': exam.name,
+                    'answer': exam.answer
+                })
+        report = self.generate_report(data)
+        self.save_to_db(date, user_id, report)
+        
+        return True, ["📊 AI 선생님의 총평", report['title']], report['content']
+
+    def generate_report(self, user_exam: dict):
+        # 시스템 프롬프트: AI 역할 정의
+        system_prompt = "너는 한국 교육에 익숙한 AI 선생님이야. 유저가 맞힌 문제와 틀린 문제를 기반으로 학습 리포트를 json 형식으로 작성해줘."
+
+        # 사용자 입력을 메시지에 포함
+        user_prompt = f"""
+        아래는 유저의 문제풀이 결과야. 이걸 분석해서 아래 형식으로 학습 리포트를 만들어줘.
+        결과는 반드시 아래 JSON 구조로 줄 것:
+        총평은 “균형 잡힌 기초 실력 + 응용력 향상 필요!” 이런 식으로 깔끔한 한 문장으로 만들어주고,
+        문단의 총 내용을 500자 정도로 만들어줘. 또한 친근감이 들 수 있도록 이모티콘도 적절하게 사용해줘!
+
+        {{
+        "title": "한 문장으로 총평 제목",
+        "content": [
+            "문단1",
+            "문단2",
+            "문단3",
+            "문단4"
+        ]
+        }}
+
+        다음은 유저의 문제풀이 결과야:
+        {user_exam}
+        """
+        
+        # ChatGPT API 호출
+        response = client.chat.completions.create(
+            model="gpt-4",  # 필요 시 gpt-3.5-turbo 사용 가능
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7
+        )
+        
+        # 응답에서 content만 추출
+        ai_reply = response.choices[0].message.content
+
+        
+        # 결과 반환 (AI 응답이 JSON 문자열이므로 eval 또는 json.loads 필요할 수 있음)
+        try:
+            return json.loads(ai_reply)
+        except:
+            return {"error": "응답을 JSON으로 변환할 수 없습니다.", "raw": ai_reply}
+        
+    def save_to_db(self, date: str, user_id: int, report_contents: dict):
+        title = ["📊 AI 선생님의 총평", report_contents['title']]
+        content = report_contents['content']
+        repository.save_report(date, user_id, title, content)
+                
 service = UserService()

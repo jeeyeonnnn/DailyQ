@@ -16,11 +16,13 @@ class Setting:
     
     S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
     S3_REGION = os.environ.get("S3_REGION")
+    
+    GPT_APP_KEY = os.environ.get("GPT_APP_KEY")
 
     @property
     def get_db_url(self):
         return f'mysql+pymysql://{self.DB_USER}:{self.DB_PW}@{self.DB_HOST}:{self.DB_PORT}/dailyq' \
-               f'?charset=utf8'
+               f'?charset=utf8mb4'
 
     def get_exam_image_url(self, count: Optional[int] = None):
         if count is None:

@@ -92,3 +92,14 @@ class Chat(Base):
     content = Column(String, nullable=False)
     is_read = Column(Integer, nullable=False)
     created_at = Column(DATETIME, nullable=False)
+    
+    
+class Report(Base):
+    __tablename__ = "report"
+
+    id = Column(BigInteger, primary_key=True, index=True)
+    date = Column(DATETIME, nullable=False)
+    user_id = Column(BigInteger, ForeignKey("user.id"), nullable=False)
+    is_title = Column(Integer, nullable=False)
+    content = Column(String, nullable=False)
+    order = Column(Integer, nullable=False)
