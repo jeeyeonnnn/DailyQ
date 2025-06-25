@@ -7,4 +7,4 @@ class Ranking(BaseModel):
     level: int
     profile: str
     question_count: int
-    correct_rate: int
+    correct_rate: float

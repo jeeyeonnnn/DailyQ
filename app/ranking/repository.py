@@ -21,7 +21,7 @@ class RankingRepository:
                     func.sum(
                         case((Exam.is_correct == 1, 1), else_=0)
                     ) / func.nullif(func.count(Exam.order), 0) * 100,
-                    2
+                    1
                 )
             )
 
