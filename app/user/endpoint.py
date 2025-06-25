@@ -72,7 +72,7 @@ def get_user_daily_quiz_pdf(
 
 
 @router.post(
-    path='/user/pdf/save',
+    path='/pdf/save',
     summary='유저 데일리 퀴즈 문제 PDF 저장',
     description='## ✔️️ [유저 데일리 퀴즈 문제 PDF 저장] \n'
 )
