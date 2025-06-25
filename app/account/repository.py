@@ -54,10 +54,10 @@ class AccountRepository:
 
             if user is None:
                 db.add(User(user_id=user_id, created_at=datetime.now(timezone('Asia/Seoul'))))
-                db.flush()
-                user = db.query(User).filter(User.user_id == user_id).first()
                 db.commit()
-                return user.id, False
+                
+                user_idx = db.query(User).filter(User.user_id == user_id).one().id
+                return user_idx, False
             
             is_sign_in_done = True if user.name is not None else False
             return user.id, is_sign_in_done
