@@ -51,7 +51,7 @@ class RankingRepository:
 
             Ranking = alias(ranking_subquery)
             # 전체 랭킹 top 10
-            top_10 = db.query(Ranking).order_by(Ranking.c.ranking, Ranking.c.question_count.desc()).limit(10).all()
+            top_10 = db.query(Ranking).order_by(Ranking.c.question_count.desc(), Ranking.c.ranking).limit(10).all()
 
             # 현재 유저의 랭킹
             user_ranking = db.query(Ranking).filter(Ranking.c.user_id == user_id).first()
