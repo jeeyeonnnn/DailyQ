@@ -2,6 +2,7 @@ import json
 import openai
 from openai import OpenAI
 
+from fastapi import UploadFile
 from datetime import datetime, timedelta
 from unicodedata import name
 from dateutil.relativedelta import relativedelta
@@ -488,5 +489,17 @@ class UserService:
         title = ["📊 AI 선생님의 총평", report_contents['title']]
         content = report_contents['content']
         repository.save_report(date, user_id, title, content)
+
+    def save_user_daily_quiz_pdf(self, file: UploadFile, date: str, user_id: int):
+        setting.S3_CLIENT.upload_fileobj(
+            file.file,
+            setting.S3_BUCKET_NAME,
+            f'{user_id}/{date}_report.pdf',
+            ExtraArgs={
+                'ContentType': 'binary/octet-stream',
+                'ACL': 'public-read'  # 또는 필요에 따라 다른 ACL 옵션 사용
+            }
+        )
+        return f'https://{setting.S3_BUCKET_NAME}.s3.{setting.S3_REGION}.amazonaws.com/{user_id}/{date}_report.pdf'
                 
 service = UserService()

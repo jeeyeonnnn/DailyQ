@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, Depends, status
+from fastapi import APIRouter, Query, Depends, status, File, UploadFile
 from fastapi.responses import JSONResponse
 from datetime import datetime
 from pytz import timezone
@@ -69,6 +69,20 @@ def get_user_daily_quiz_pdf(
         question_2=questions[6:],
         explanations=explanations
     )
+
+
+@router.post(
+    path='/user/pdf/save',
+    summary='유저 데일리 퀴즈 문제 PDF 저장',
+    description='## ✔️️ [유저 데일리 퀴즈 문제 PDF 저장] \n'
+)
+def post_user_daily_quiz_pdf_save(
+    file: UploadFile = File(...),
+    date: str = Query(default=datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d')),
+    user_id=Depends(auth.auth_wrapper)
+):
+    url = service.save_user_daily_quiz_pdf(file, date, user_id)
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "PDF 저장이 완료되었습니다.", "url": url})
 
 @router.post(
     path='/quiz',
