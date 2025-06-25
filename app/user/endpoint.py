@@ -50,7 +50,9 @@ def get_user_daily_quiz(
 @router.get(
     path='/quiz/pdf',
     summary='유저 데일리 퀴즈 문제 PDF 조회',
-    description='## ✔️️ [유저 데일리 퀴즈 문제 PDF 만들기] \n',
+    description='## ✔️️ [유저 데일리 퀴즈 문제 PDF 만들기] \n'
+                '### - 오늘 퀴즈를 푼 이력이 없으면 404 반환 => {"message": "오늘 퀴즈를 푼 이력이 없습니다."} \n'
+                '### - 오늘 퀴즈를 푼 이력이 있으면 데이터 반환 (question_1 = 6개, question_2 = 4개 고정 !!)'   ,
     response_model=DailyQuizPdfResponse
 )
 def get_user_daily_quiz_pdf(
@@ -63,7 +65,8 @@ def get_user_daily_quiz_pdf(
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "오늘 퀴즈를 푼 이력이 없습니다."})
     
     return DailyQuizPdfResponse(
-        questions=questions,
+        question_1=questions[:6],
+        question_2=questions[6:],
         explanations=explanations
     )
 

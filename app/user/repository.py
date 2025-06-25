@@ -340,10 +340,14 @@ class UserRepository:
     def get_today_exams(self, date: str, user_id: int):
         with database.session_factory() as db:
             exams = db.query(
+                Subject.name.label('subject'),
+                Difficult.name.label('difficult'),
                 Question.name,
                 Question.answer,
                 Exam.is_correct
             ).select_from(Exam).join(Question, Question.id == Exam.question_id)\
+                .join(Subject, Subject.id == Question.subject_id)\
+                .join(Difficult, Difficult.id == Question.difficult_id)\
                 .filter(
                     Exam.created_date == date,
                     Exam.user_id == user_id

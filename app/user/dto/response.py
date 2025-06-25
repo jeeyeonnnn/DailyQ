@@ -329,13 +329,14 @@ class UserSearchResponse(BaseModel):
         }
 
 class DailyQuizPdfResponse(BaseModel):
-    questions: List[QuestionPdfInfo]
+    question_1: List[QuestionPdfInfo]
+    question_2: List[QuestionPdfInfo]
     explanations: List[ExplanationPdfInfo]
 
     class Config:
         json_schema_extra = {
             "example": {
-                "questions": [
+                "question_1": [
                     {
                     "subject": "예술",
                     "difficult": "상",
@@ -344,7 +345,9 @@ class DailyQuizPdfResponse(BaseModel):
                     "select_2": "고흐",
                     "select_3": "르누아르",
                     "select_4": "모딜리아니"
-                    },
+                    }
+                ],
+                "question_2": [
                     {
                     "subject": "수/과학",
                     "difficult": "중상",

@@ -420,11 +420,15 @@ class UserService:
         for exam in today_exams:
             if exam.is_correct:
                 data['correct'].append({
+                    'subject': exam.subject,
+                    'difficult': exam.difficult,
                     'question': exam.name,
                     'answer': exam.answer
                 })
             else:
                 data['incorrect'].append({
+                    'subject': exam.subject,
+                    'difficult': exam.difficult,
                     'question': exam.name,
                     'answer': exam.answer
                 })
@@ -441,8 +445,10 @@ class UserService:
         user_prompt = f"""
         아래는 유저의 문제풀이 결과야. 이걸 분석해서 아래 형식으로 학습 리포트를 만들어줘.
         결과는 반드시 아래 JSON 구조로 줄 것:
-        총평은 “균형 잡힌 기초 실력 + 응용력 향상 필요!” 이런 식으로 깔끔한 한 문장으로 만들어주고,
-        문단의 총 내용을 500자 정도로 만들어줘. 또한 친근감이 들 수 있도록 이모티콘도 적절하게 사용해줘!
+        총평은 깔끔한 한 문장으로 공백 포함 40글자 이내로 만들어주고,
+        문단의 총 내용을 600자 정도로 만들어줘. 또한 친근감이 들 수 있도록 이모티콘도 적절하게 사용해줘!
+        주제와 난이도는 각각 5가지야. 이에 대한 분석도 있음 좋겠어.
+        이름은 "학습자"로 통일해줘.
 
         {{
         "title": "한 문장으로 총평 제목",
