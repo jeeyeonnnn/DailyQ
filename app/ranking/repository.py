@@ -27,7 +27,10 @@ class RankingRepository:
 
             # 전체 랭킹 쿼리 (서브쿼리화)
             ranking_subquery = db.query(
-                func.row_number().over(order_by=func.count().desc()).label('ranking'),
+                func.row_number().over(order_by=[
+                    func.count().desc(),
+                    correct_expr.desc()
+                ]).label('ranking'),
                 User.id.label('user_id'),
                 User.name,
                 User.level,
