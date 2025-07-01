@@ -50,7 +50,9 @@ class AuthHandler:
             "sub": setting.APPLE_CLIENT_ID
         }
 
-        private_key = setting.APPLE_PRIVATE_KEY.replace("\\n", "\n")
+        with open('app/core/apple.p8', 'r') as f:
+            private_key = f.read()
+
         client_secret = jwt.encode(
             payload=claims,
             key=private_key,
@@ -59,6 +61,10 @@ class AuthHandler:
         )
 
         return client_secret
+    
+    def decode_id_token(self, id_token: str):
+        decoded = jwt.decode(id_token, options={"verify_signature": False})
+        return decoded
 
 
 auth = AuthHandler()

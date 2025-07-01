@@ -85,19 +85,19 @@ def google_sign_in(request: GoogleSignInRequest):
 @router.post(
     path='/apple-sign-in',
     summary='애플 로그인',
-    description='## ✔️️ [애플 로그인 + 회원가입] \n'
-    # response_model=SignInResponse
+    description='## ✔️️ [애플 로그인 + 회원가입] \n',
+    response_model=SignInResponse
 )
 def apple_sign_in(request: AppleSignInRequest):
-    service.apple_sign_in(request.code)
-    # user_id, is_signup_done = service.social_sign_in('A', request.apple_user_key)
+    apple_user_id = service.apple_sign_in(request.code)
+    user_id, is_signup_done = service.social_sign_in('A', apple_user_id)
     
-    # access_token = auth.encode_token(user_id)
-    # return JSONResponse(status_code=status.HTTP_201_CREATED, content={
-    #     "message": "로그인이 완료되었습니다.", 
-    #     "access_token": access_token,
-    #     "is_signup_done": is_signup_done
-    # })
+    access_token = auth.encode_token(user_id)
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={
+        "message": "로그인이 완료되었습니다.", 
+        "access_token": access_token,
+        "is_signup_done": is_signup_done
+    })
 
 
 @router.post(

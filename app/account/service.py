@@ -36,7 +36,8 @@ class AccountService:
         }
 
         response = requests.post("https://appleid.apple.com/auth/token", data=data)
-        print(response.status_code)
-        print(response.json())
+        id_token = response.json()['id_token']
+        decoded = auth.decode_id_token(id_token)
+        return decoded['sub']
 
 service = AccountService()
