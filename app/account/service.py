@@ -1,7 +1,10 @@
 import bcrypt
+import requests
 
 from app.account.dto.request import SignUpRequest, SignInRequest, OnboardingRequest, GoogleSignInRequest
 from app.account.repository import repository
+from app.core.auth import auth
+from app.core.setting import setting
 
 class AccountService:
     def sign_up(self, request: SignUpRequest):
@@ -21,5 +24,19 @@ class AccountService:
 
     def resign(self, user_id: int):
         return repository.resign(user_id)
+
+    def apple_sign_in(self, code: str):
+        client_secret = auth.generate_apple_client_secret()
+
+        data = {
+            "client_id": setting.APPLE_CLIENT_ID,
+            "client_secret": client_secret,
+            "code": code,
+            "grant_type": "authorization_code",
+        }
+
+        response = requests.post("https://appleid.apple.com/auth/token", data=data)
+        print(response.status_code)
+        print(response.json())
 
 service = AccountService()

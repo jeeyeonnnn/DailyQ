@@ -1,6 +1,7 @@
 from typing import Optional, Annotated
 
 import jwt
+import time
 from fastapi import HTTPException, Header
 from datetime import datetime, timedelta
 from pytz import timezone
@@ -33,6 +34,31 @@ class AuthHandler:
 
     def auth_wrapper(self, access_token: Annotated[str, Header()]):
         return self.decode_token(access_token[7:])  # Bearer 제거 
+
+
+    def generate_apple_client_secret(self):
+        headers = {
+            "kid": setting.APPLE_KEY_ID,
+            "alg": "ES256"
+        }
+
+        claims = {
+            "iss": setting.APPLE_TEAM_ID,
+            "iat": int(time.time()),
+            "exp": int(time.time()) + 86400 * 180,
+            "aud": "https://appleid.apple.com",
+            "sub": setting.APPLE_CLIENT_ID
+        }
+
+        private_key = setting.APPLE_PRIVATE_KEY.replace("\\n", "\n")
+        client_secret = jwt.encode(
+            payload=claims,
+            key=private_key,
+            algorithm="ES256",
+            headers=headers
+        )
+
+        return client_secret
 
 
 auth = AuthHandler()

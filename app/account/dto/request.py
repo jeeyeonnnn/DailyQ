@@ -50,11 +50,11 @@ class GoogleSignInRequest(BaseModel):
         }
         
 class AppleSignInRequest(BaseModel):
-    apple_user_key: str
+    code: str
 
     class Config:
         json_schema_extra = {
             "example": {
-                "apple_user_key": "fjeiog35901wsd"
+                "code": "fjeiog35901wsd"
             }
         }
