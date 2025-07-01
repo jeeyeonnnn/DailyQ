@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi import status, Depends
 from fastapi.responses import JSONResponse
 
-from app.account.dto.request import SignUpRequest, SignInRequest, OnboardingRequest, GoogleSignInRequest
+from app.account.dto.request import SignUpRequest, SignInRequest, OnboardingRequest, GoogleSignInRequest, AppleSignInRequest
 from app.account.dto.response import SignInResponse
 from app.account.service import service
 from app.core.auth import auth
@@ -72,7 +72,7 @@ def sign_in(request: SignInRequest):
     response_model=SignInResponse
 )
 def google_sign_in(request: GoogleSignInRequest):
-    user_id, is_signup_done = service.google_sign_in(request)
+    user_id, is_signup_done = service.social_sign_in('G', request.google_user_key)
     
     access_token = auth.encode_token(user_id)
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={
@@ -80,6 +80,43 @@ def google_sign_in(request: GoogleSignInRequest):
         "access_token": access_token,
         "is_signup_done": is_signup_done
     })
+    
+    
+@router.post(
+    path='/apple-sign-in',
+    summary='애플 로그인',
+    description='## ✔️️ [애플 로그인 + 회원가입] \n',
+    response_model=SignInResponse
+)
+def apple_sign_in(request: AppleSignInRequest):
+    user_id, is_signup_done = service.social_sign_in('A', request.apple_user_key)
+    
+    access_token = auth.encode_token(user_id)
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={
+        "message": "로그인이 완료되었습니다.", 
+        "access_token": access_token,
+        "is_signup_done": is_signup_done
+    })
+
+
+@router.post(
+    path='/resign',
+    summary='회원탈퇴',
+    description='## ✔️️ [회원탈퇴] \n'
+                '### 🗨️ Status Code 400 Message \n'
+                '- 회원탈퇴 처리 중 오류가 발생한 경우 \n'
+                '''
+                    {
+                        "message": "회원탈퇴 처리 중 오류가 발생했습니다."
+                    }
+                '''
+)
+def resign(
+    user_id=Depends(auth.auth_wrapper)
+):
+    service.resign(user_id)
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "회원탈퇴가 완료되었습니다."})
+
 
 @router.post(
     path='/onboarding',

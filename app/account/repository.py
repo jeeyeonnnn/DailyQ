@@ -47,9 +47,9 @@ class AccountRepository:
             db.commit()
             return 0  # 온보딩 성공
     
-    def google_sign_in(self, google_user_key: str):
+    def social_sign_in(self, login_type: str, user_key: str):
         with database.session_factory() as db:
-            user_id = f'G{google_user_key}'
+            user_id = f'{login_type}{user_key}'
             user = db.query(User).filter(User.user_id == user_id).first()
 
             if user is None:
@@ -61,5 +61,11 @@ class AccountRepository:
             
             is_sign_in_done = True if user.name is not None else False
             return user.id, is_sign_in_done
+
+    def resign(self, user_id: int):
+        with database.session_factory() as db:
+            user = db.query(User).filter(User.id == user_id).one()
+            user.is_resigned = 1
+            db.commit()
 
 repository = AccountRepository()

@@ -218,8 +218,8 @@ class UserRepository:
                 ).label('correct')
             ).select_from(Exam)\
             .filter(
-                Exam.created_date >= first_date,
-                Exam.created_date <= last_date,
+                Exam.created_date >= first_date.strftime('%Y-%m-%d'),
+                Exam.created_date <= last_date.strftime('%Y-%m-%d'),
                 Exam.user_id == user_id
             ).one()
 
@@ -299,7 +299,8 @@ class UserRepository:
             )).filter(
                 User.name.like(f'%{keyword}%'),
                 User.id != user_id,
-                User.name != None
+                User.name != None,
+                User.is_resigned == 0
             ).order_by(User.name).all()
 
     def get_daily_quiz_pdf(self, date: str, user_id: int):

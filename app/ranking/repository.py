@@ -46,6 +46,7 @@ class RankingRepository:
             ))\
             .filter(
                 User.region_id == region_id,
+                User.is_resigned == 0,
                 Exam.created_date >= monday.strftime('%Y-%m-%d'),
                 Exam.created_date < today.strftime('%Y-%m-%d')
             ).group_by(User.id, User.name, User.level, User.pet_type, Profile.ranking)\

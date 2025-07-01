@@ -25,13 +25,16 @@ class ChatRoomResponse(BaseModel):
         }
 
 class ChatDetailResponse(BaseModel):
+    is_reported: bool
     user_info: UserInfo
     chat_detail: List[ChatDetail]
 
     class Config:
         json_schema_extra = {
             'example': {
+                "is_reported": False,
                 "user_info": {
+                    "user_id": 10,
                     "nickname": "무지개쿵야",
                     "level": 1,
                     "profile": "chat_1.png"

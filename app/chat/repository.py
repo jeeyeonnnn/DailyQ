@@ -23,19 +23,26 @@ class ChatRepository:
             ).group_by(ChatRoom.id).order_by(desc('last_message_time')).all()
             
 
-    def get_chat_detail(self, user_1_id: int, user_2_id: int):
+    def get_chat_detail(self, user_id: int, user_1_id: int, user_2_id: int):
         with database.session_factory() as db:
-            return db.query(
+            room = db.query(ChatRoom).filter(
+                ChatRoom.user_1_id == user_1_id,
+                ChatRoom.user_2_id == user_2_id
+            ).one()
+            
+            chat = db.query(
                 Chat.content,
                 Chat.created_at,
                 Chat.sender_id
-            ).select_from(Chat)\
-                .join(ChatRoom, ChatRoom.id == Chat.room_id)\
-                .filter(
-                    ChatRoom.user_1_id == user_1_id,
-                    ChatRoom.user_2_id == user_2_id
-                )\
-            .order_by(Chat.created_at.asc()).all()
+            ).filter(Chat.room_id == room.id)\
+            .order_by(Chat.created_at.asc())
+            
+            if user_id == user_1_id and room.user_1_out is not None:
+                chat = chat.filter(Chat.id > room.user_1_out)
+            elif user_id == user_2_id and room.user_2_out is not None:
+                chat = chat.filter(Chat.id > room.user_2_out)
+                
+            return chat.all()
 
     def get_chat_room_user_info(self, user_id: int):
         with database.session_factory() as db:
@@ -54,6 +61,7 @@ class ChatRepository:
     def get_user_info(self, user_id: int):
         with database.session_factory() as db:
             return db.query(
+                User.id,
                 User.name,
                 User.level,
                 Profile.chat.label('profile')
@@ -91,6 +99,9 @@ class ChatRepository:
                         ChatRoom.user_2_id == user_id
                     )
             )).one()
+            
+            if chat_room.is_reported == 1:
+                return False
 
             db.add(Chat(
                 room_id=chat_room.id,
@@ -100,6 +111,8 @@ class ChatRepository:
                 is_read=0
             ))
             db.commit()
+
+            return True
 
     def check_is_exist_chat_room(self, user_1_id: int, user_2_id: int):
         with database.session_factory() as db:
@@ -128,4 +141,59 @@ class ChatRepository:
                 .count()
             return last_message, unread_count
     
+    def report_chat(self, user_id: int, other_id: int):
+        with database.session_factory() as db:
+            room = db.query(ChatRoom).filter(or_(
+                and_(ChatRoom.user_1_id == user_id, ChatRoom.user_2_id == other_id),
+                and_(ChatRoom.user_1_id == other_id, ChatRoom.user_2_id == user_id)
+            )).one()
+            
+            room.is_reported = 1
+            db.commit()
+            
+    def get_is_reported(self, user_1_id: int, user_2_id: int):
+        with database.session_factory() as db:
+            return db.query(ChatRoom.is_reported).filter(
+                ChatRoom.user_1_id == user_1_id, 
+                ChatRoom.user_2_id == user_2_id
+            ).one().is_reported
+            
+    def is_user_get_out_chat_room(self, room_id: int, user_id: int):
+        with database.session_factory() as db:
+            room = db.query(ChatRoom).filter(
+                ChatRoom.id == room_id
+            ).one()
+            
+            last_chat_id = db.query(Chat).filter(
+                Chat.room_id == room_id
+            ).order_by(desc(Chat.id)).first().id
+            
+            if room.user_1_id == user_id and room.user_1_out is not None:
+                if last_chat_id <= room.user_1_out:
+                    return True
+            elif room.user_2_id == user_id and room.user_2_out is not None:
+                if last_chat_id <= room.user_2_out:
+                    return True
+            return False
+            
+    def get_out_chat(self, user_id: int, other_id: int):
+        with database.session_factory() as db:
+            room = db.query(ChatRoom).filter(
+                or_(
+                    and_(ChatRoom.user_1_id == user_id, ChatRoom.user_2_id == other_id),
+                    and_(ChatRoom.user_1_id == other_id, ChatRoom.user_2_id == user_id)
+                )
+            ).one()
+            
+            last_chat_id = db.query(Chat).filter(
+                Chat.room_id == room.id
+            ).order_by(desc(Chat.id)).first().id
+            
+            if room.user_1_id == user_id:
+                room.user_1_out = last_chat_id
+            else:
+                room.user_2_out = last_chat_id
+                
+            db.commit()
+                
 repository = ChatRepository()

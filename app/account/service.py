@@ -16,7 +16,10 @@ class AccountService:
         return repository.onboarding(user_id, request.nickname, request.pet_type, request.region_id)
 
 
-    def google_sign_in(self, request: GoogleSignInRequest):
-        return repository.google_sign_in(request.google_user_key)
+    def social_sign_in(self, login_type: str, user_key: str):
+        return repository.social_sign_in(login_type, user_key)
+
+    def resign(self, user_id: int):
+        return repository.resign(user_id)
 
 service = AccountService()

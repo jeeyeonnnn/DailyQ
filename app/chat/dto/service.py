@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 class UserInfo(BaseModel):
+    user_id: int
     nickname: str
     level: int
     profile: str

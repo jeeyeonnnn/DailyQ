@@ -13,21 +13,22 @@ class ChatService:
         now = datetime.strptime(now, '%Y-%m-%d %H:%M:%S')
 
         for chat_room in chat_rooms:
-            other_id = chat_room.user_1_id if chat_room.user_1_id != user_id else chat_room.user_2_id
-            other_info = repository.get_chat_room_user_info(other_id)
-            last_message, unread_count = repository.get_last_message_and_unread_count(chat_room.id, user_id)
+            if not repository.is_user_get_out_chat_room(chat_room.id, user_id):
+                other_id = chat_room.user_1_id if chat_room.user_1_id != user_id else chat_room.user_2_id
+                other_info = repository.get_chat_room_user_info(other_id)
+                last_message, unread_count = repository.get_last_message_and_unread_count(chat_room.id, user_id)
 
-            user_chat_list.append(
-                ChatRoomResponse(
-                    user_id=other_info.id,
-                    nickname=other_info.name,
-                    level=other_info.level,
-                    profile=f'https://{setting.S3_BUCKET_NAME}.s3.{setting.S3_REGION}.amazonaws.com/{other_info.profile}',
-                    last_message=last_message,
-                    last_message_time=self.get_time_diff(now, chat_room.last_message_time),
-                    unread_count=unread_count
+                user_chat_list.append(
+                    ChatRoomResponse(
+                        user_id=other_info.id,
+                        nickname=other_info.name,
+                        level=other_info.level,
+                        profile=f'https://{setting.S3_BUCKET_NAME}.s3.{setting.S3_REGION}.amazonaws.com/{other_info.profile}',
+                        last_message=last_message,
+                        last_message_time=self.get_time_diff(now, chat_room.last_message_time),
+                        unread_count=unread_count
+                    )
                 )
-            )
         return user_chat_list
 
     def get_time_diff(self, now, last_message_time) -> str:
@@ -60,7 +61,8 @@ class ChatService:
         repository.update_chat_read(user_1_id, user_2_id, other_id)
 
         other_info = repository.get_user_info(other_id)
-        chats = repository.get_chat_detail(user_1_id, user_2_id)
+        chats = repository.get_chat_detail(user_id, user_1_id, user_2_id)
+        is_reported = repository.get_is_reported(user_1_id, user_2_id)
 
         chat_detail = []
         for chat in chats:
@@ -73,7 +75,8 @@ class ChatService:
                 )
             )
         
-        return chat_detail, UserInfo(
+        return True if is_reported == 1 else False, chat_detail, UserInfo(
+            user_id=other_info.id,
             nickname=other_info.name,
             level=other_info.level,
             profile=f'https://{setting.S3_BUCKET_NAME}.s3.{setting.S3_REGION}.amazonaws.com/{other_info.profile}'
@@ -91,7 +94,7 @@ class ChatService:
 
     def send_chat(self, user_id: int, other_id: int, content: str):
         self.check_is_exist_chat_room(user_id, other_id)
-        repository.send_chat(user_id, other_id, content)
+        return repository.send_chat(user_id, other_id, content)
 
     def check_is_exist_chat_room(self, user_id: int, other_id: int):
         return repository.check_is_exist_chat_room(
@@ -99,5 +102,10 @@ class ChatService:
             max(user_id, other_id)
         )
 
+    def report_chat(self, user_id: int, other_id: int):
+        repository.report_chat(user_id, other_id)
+
+    def get_out_chat(self, user_id: int, other_id: int):
+        repository.get_out_chat(user_id, other_id)
 
 service = ChatService()

@@ -23,6 +23,7 @@ class User(Base):
     pet_type = Column(Integer, nullable=False)
     level = Column(Integer, nullable=False, default=1)
     created_at = Column(DATETIME, nullable=False)
+    is_resigned = Column(Integer, nullable=False, default=0)
 
 
 class Subject(Base):
@@ -82,6 +83,9 @@ class ChatRoom(Base):
     user_1_id = Column(BigInteger, ForeignKey("user.id"), nullable=False)
     user_2_id = Column(BigInteger, ForeignKey("user.id"), nullable=False)
     created_at = Column(DATETIME, nullable=False)
+    is_reported = Column(Integer, nullable=False, default=0)
+    user_1_out = Column(Integer, nullable=True)
+    user_2_out = Column(Integer, nullable=True)
 
 class Chat(Base):
     __tablename__ = "chat"

@@ -48,3 +48,13 @@ class GoogleSignInRequest(BaseModel):
                 "google_user_key": "fjeiog35901wsd"
             }
         }
+        
+class AppleSignInRequest(BaseModel):
+    apple_user_key: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "apple_user_key": "fjeiog35901wsd"
+            }
+        }
