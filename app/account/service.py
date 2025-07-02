@@ -27,7 +27,7 @@ class AccountService:
 
     def apple_sign_in(self, code: str):
         client_secret = auth.generate_apple_client_secret()
-
+        print(f'client id : {setting.APPLE_CLIENT_ID}')
         data = {
             "client_id": setting.APPLE_CLIENT_ID,
             "client_secret": client_secret,
