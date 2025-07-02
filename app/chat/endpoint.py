@@ -112,6 +112,20 @@ def get_out_chat(
     return JSONResponse(status_code=201, content={"message": "Get out successfully"})
 
 
+@router.post(
+    path='/out',
+    summary='채팅방 나가기 (읽음 처리를 위함)',
+    description='## ✔️️ [채팅방 나가기 (읽음 처리를 위함)] \n'
+                '### - 유저의 채팅방 읽음 처리 \n'
+)
+def post_out_chat(
+    request: ChatReportRequest,
+    user_idx=Depends(auth.auth_wrapper)
+):
+    service.post_out_chat(user_idx, request.user_id)
+    return JSONResponse(status_code=201, content={"message": "Get out successfully"})
+
+    
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket, 

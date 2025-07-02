@@ -195,5 +195,23 @@ class ChatRepository:
                 room.user_2_out = last_chat_id
                 
             db.commit()
+
+    def post_out_chat(self, user_id: int, other_id: int):
+        with database.session_factory() as db:
+            chats = db.query(Chat.id).select_from(Chat)\
+                .join(ChatRoom, Chat.room_id == ChatRoom.id)\
+                .filter(
+                    or_(
+                        and_(ChatRoom.user_1_id == user_id, ChatRoom.user_2_id == other_id),
+                        and_(ChatRoom.user_1_id == other_id, ChatRoom.user_2_id == user_id)
+                    ),
+                    Chat.sender_id == other_id,
+                    Chat.is_read == 0
+                ).all()
+
+            for chat in chats:
+                db.query(Chat).filter(Chat.id == chat.id).update({Chat.is_read: 1})
+            db.commit()
+
                 
 repository = ChatRepository()

@@ -108,4 +108,7 @@ class ChatService:
     def get_out_chat(self, user_id: int, other_id: int):
         repository.get_out_chat(user_id, other_id)
 
+    def post_out_chat(self, user_id: int, other_id: int):
+        repository.post_out_chat(user_id, other_id)
+
 service = ChatService()
