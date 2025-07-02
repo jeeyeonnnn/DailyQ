@@ -43,9 +43,14 @@ def sign_up(request: SignUpRequest):
                 '- False : 아이디 + 비번 계정 가입만 진행한 경우 (중간에 이탈) \n'
                 '### 🗨️ Status Code 400 Message \n'
                 '- ID가 존재하지 않거나 비밀번호가 틀린 경우 \n'
+                '- 탈퇴한 유저 \n'
                 '''
                     {
                         "message": "아이디 또는 비밀번호가 일치하지 않습니다."
+                    }
+                    
+                    {
+                        "message": "탈퇴한 유저입니다."
                     }
                 ''',
     status_code=status.HTTP_201_CREATED,
@@ -56,6 +61,8 @@ def sign_in(request: SignInRequest):
     
     if status_code in [-1, -2]:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "아이디 또는 비밀번호가 일치하지 않습니다."})
+    elif status_code == -3:
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "탈퇴한 유저입니다."})
     elif status_code == 0:
         access_token = auth.encode_token(user_id)
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={
@@ -73,6 +80,9 @@ def sign_in(request: SignInRequest):
 )
 def google_sign_in(request: GoogleSignInRequest):
     user_id, is_signup_done = service.social_sign_in('G', request.google_user_key)
+    
+    if user_id == -1:
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "탈퇴한 유저입니다."})
     
     access_token = auth.encode_token(user_id)
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={
@@ -92,6 +102,9 @@ def apple_sign_in(request: AppleSignInRequest):
     print(f'code : {request.code}')
     apple_user_id = service.apple_sign_in(request.code)
     user_id, is_signup_done = service.social_sign_in('A', apple_user_id)
+    
+    if user_id == -1:
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": "탈퇴한 유저입니다."})
     
     access_token = auth.encode_token(user_id)
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={

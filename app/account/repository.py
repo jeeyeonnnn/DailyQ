@@ -27,6 +27,8 @@ class AccountRepository:
                 return -1, None, None  # 존재하지 않는 아이디
             if not bcrypt.checkpw(password.encode(encoding="utf-8"), user.password.encode(encoding="utf-8")):
                 return -2, None, None  # 비밀번호 불일치
+            if user.is_resigned == 1:
+                return -3, None, None  # 탈퇴한 유저
             
             is_sign_in_done = True if user.name is not None else False
             return 0, user.id, is_sign_in_done
@@ -58,6 +60,9 @@ class AccountRepository:
                 
                 user_idx = db.query(User).filter(User.user_id == user_id).one().id
                 return user_idx, False
+            
+            if user.is_resigned == 1:
+                return -1, None  # 탈퇴한 유저
             
             is_sign_in_done = True if user.name is not None else False
             return user.id, is_sign_in_done
