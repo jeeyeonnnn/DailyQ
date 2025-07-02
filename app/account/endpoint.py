@@ -89,6 +89,7 @@ def google_sign_in(request: GoogleSignInRequest):
     response_model=SignInResponse
 )
 def apple_sign_in(request: AppleSignInRequest):
+    print(f'code : {request.code}')
     apple_user_id = service.apple_sign_in(request.code)
     user_id, is_signup_done = service.social_sign_in('A', apple_user_id)
     
