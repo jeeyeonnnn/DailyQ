@@ -24,7 +24,7 @@ class User(Base):
     level = Column(Integer, nullable=False, default=1)
     created_at = Column(DATETIME, nullable=False)
     is_resigned = Column(Integer, nullable=False, default=0)
-
+    fcm = Column(String, nullable=True)
 
 class Subject(Base):
     __tablename__ = "subject"

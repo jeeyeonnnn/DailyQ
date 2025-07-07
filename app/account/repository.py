@@ -33,7 +33,7 @@ class AccountRepository:
             is_sign_in_done = True if user.name is not None else False
             return 0, user.id, is_sign_in_done
 
-    def onboarding(self, user_id: str, nickname: str, pet_type: int, region_id: int):
+    def onboarding(self, user_id: str, nickname: str, pet_type: int, region_id: int, fcm_token: str):
         with database.session_factory() as db:
             if db.query(User).filter(User.name == nickname).count() > 0:
                 return -1  # 이미 존재하는 닉네임
@@ -46,6 +46,7 @@ class AccountRepository:
             user.name = nickname
             user.pet_type = pet_type
             user.region_id = region_id
+            user.fcm = fcm_token
             db.commit()
             return 0  # 온보딩 성공
     

@@ -16,7 +16,7 @@ class AccountService:
         return repository.sign_in(request.user_id, request.password)
 
     def onboarding(self, user_id: str, request: OnboardingRequest):
-        return repository.onboarding(user_id, request.nickname, request.pet_type, request.region_id)
+        return repository.onboarding(user_id, request.nickname, request.pet_type, request.region_id, request.fcm_token)
 
 
     def social_sign_in(self, login_type: str, user_key: str):

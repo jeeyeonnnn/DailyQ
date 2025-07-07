@@ -1,4 +1,5 @@
-from pydantic import BaseModel, json_schema
+from pydantic import BaseModel
+from typing import Optional
 
 class SignUpRequest(BaseModel):
     user_id: str
@@ -28,13 +29,15 @@ class OnboardingRequest(BaseModel):
     nickname: str
     pet_type: int
     region_id: int
+    fcm_token: Optional[str] = None
 
     class Config:
         json_schema_extra = {
             "example": {
                 "nickname": "무지개쿵야",
                 "pet_type": 4,
-                "region_id": 31
+                "region_id": 31,
+                "fcm_token": "fjeiog35901wsd"
             }
         }
 
